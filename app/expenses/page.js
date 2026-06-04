@@ -93,7 +93,7 @@ export default function ExpensesPage() {
   const years = [currentYear, currentYear - 1, currentYear - 2].map(String)
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4 max-w-5xl mx-auto">
+    <div className="min-h-screen pt-16 lg:pt-10 pb-12 px-4 lg:px-8 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>

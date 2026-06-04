@@ -8,7 +8,9 @@ import StatCard from '@/components/StatCard'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import { SpendingAreaChart } from '@/components/Charts'
-import { TrendingUp, Wallet, Receipt, Tag, Plus, X, Loader2 } from 'lucide-react'
+import { TrendingUp, Wallet, Receipt, Tag, Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+
+const PAGE_SIZE = 8
 
 function MobileSheet({ open, onClose, children }) {
   const [visible, setVisible] = useState(false)
@@ -27,14 +29,11 @@ function MobileSheet({ open, onClose, children }) {
 
   return (
     <div className="fixed inset-0 z-50 md:hidden">
-      {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${animOut ? 'opacity-0' : 'opacity-100'}`}
         onClick={onClose}
       />
-      {/* Sheet */}
       <div className={`absolute bottom-0 left-0 right-0 bg-[#120d24] border-t border-purple-500/30 rounded-t-2xl ${animOut ? 'sheet-exit' : 'sheet-enter'}`}>
-        {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
@@ -53,45 +52,67 @@ export default function DashboardPage() {
 
   const [stats, setStats] = useState(null)
   const [expenses, setExpenses] = useState([])
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [showForm, setShowForm] = useState(false)
   const [editExpense, setEditExpense] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
   }, [user, authLoading])
 
-  const fetchData = useCallback(async () => {
+  const fetchStats = useCallback(async () => {
+    const res = await fetch('/api/expenses/stats')
+    if (res.ok) setStats(await res.json())
+  }, [])
+
+  const fetchExpenses = useCallback(async (p) => {
+    const res = await fetch(`/api/expenses?limit=${PAGE_SIZE}&page=${p}`)
+    if (!res.ok) return
+    const data = await res.json()
+    setExpenses(data.expenses || [])
+    setTotalPages(data.totalPages || 1)
+  }, [])
+
+  const fetchData = useCallback(async (p = 1) => {
     try {
-      const [statsRes, expensesRes] = await Promise.all([
-        fetch('/api/expenses/stats'),
-        fetch('/api/expenses?limit=8'),
-      ])
-      const [statsData, expensesData] = await Promise.all([statsRes.json(), expensesRes.json()])
-      setStats(statsData)
-      setExpenses(expensesData.expenses || [])
+      await Promise.all([fetchStats(), fetchExpenses(p)])
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [fetchStats, fetchExpenses])
 
   useEffect(() => {
-    if (user) fetchData()
+    if (user) fetchData(1)
   }, [user, fetchData])
 
+  const goToPage = async (p) => {
+    setPageLoading(true)
+    setPage(p)
+    await fetchExpenses(p)
+    setPageLoading(false)
+  }
+
+  // Socket: instant update when expense created/updated/deleted
   useEffect(() => {
     if (!socket) return
     const handleCreated = (expense) => {
-      setExpenses((prev) => [expense, ...prev].slice(0, 8))
-      fetchData()
+      // Only prepend on page 1 so list stays consistent
+      if (page === 1) {
+        setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
+      }
+      fetchStats()
     }
     const handleUpdated = (expense) => {
       setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
-      fetchData()
+      fetchStats()
     }
     const handleDeleted = ({ id }) => {
       setExpenses((prev) => prev.filter((e) => e._id !== id))
-      fetchData()
+      fetchStats()
+      fetchExpenses(page)
     }
     socket.on('expense:created', handleCreated)
     socket.on('expense:updated', handleUpdated)
@@ -101,7 +122,7 @@ export default function DashboardPage() {
       socket.off('expense:updated', handleUpdated)
       socket.off('expense:deleted', handleDeleted)
     }
-  }, [socket, fetchData])
+  }, [socket, page, fetchStats, fetchExpenses])
 
   if (authLoading || !user) {
     return (
@@ -117,8 +138,27 @@ export default function DashboardPage() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
+  // Called when expense is successfully added/edited
+  const handleFormSuccess = (expense) => {
+    setShowForm(false)
+    setEditExpense(null)
+    if (!expense) return
+
+    if (editExpense) {
+      // Edit: update in-place
+      setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
+    } else {
+      // Add: go to page 1 and prepend immediately
+      setPage(1)
+      setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
+      setTotalPages((prev) => Math.max(prev, 1))
+    }
+    // Refresh stats in background
+    fetchStats()
+  }
+
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4 max-w-7xl mx-auto">
+    <div className="min-h-screen pt-16 lg:pt-10 pb-12 px-4 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
@@ -188,11 +228,7 @@ export default function DashboardPage() {
           {showForm ? (
             <ExpenseForm
               editData={editExpense}
-              onSuccess={(expense) => {
-                setShowForm(false)
-                setEditExpense(null)
-                if (!socket) fetchData()
-              }}
+              onSuccess={handleFormSuccess}
               onClose={() => { setShowForm(false); setEditExpense(null) }}
             />
           ) : (
@@ -248,21 +284,51 @@ export default function DashboardPage() {
             View all →
           </button>
         </div>
+
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
           </div>
         ) : expenses.length ? (
-          <div className="space-y-2">
-            {expenses.map((expense) => (
-              <ExpenseCard
-                key={expense._id}
-                expense={expense}
-                onDelete={(id) => setExpenses((p) => p.filter((e) => e._id !== id))}
-                onEdit={(exp) => { setEditExpense(exp); setShowForm(true) }}
-              />
-            ))}
-          </div>
+          <>
+            <div className={`space-y-2 transition-opacity duration-200 ${pageLoading ? 'opacity-50' : 'opacity-100'}`}>
+              {expenses.map((expense) => (
+                <ExpenseCard
+                  key={expense._id}
+                  expense={expense}
+                  onDelete={(id) => {
+                    setExpenses((p) => p.filter((e) => e._id !== id))
+                    fetchStats()
+                    fetchExpenses(page)
+                  }}
+                  onEdit={(exp) => { setEditExpense(exp); setShowForm(true) }}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-5 px-1">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1 || pageLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Prev
+                </button>
+                <span className="text-xs text-slate-500">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages || pageLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Next <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="glass-card rounded-2xl border border-white/5 p-12 text-center">
             <div className="text-4xl mb-3">💸</div>
@@ -279,11 +345,7 @@ export default function DashboardPage() {
       <MobileSheet open={showForm} onClose={() => { setShowForm(false); setEditExpense(null) }}>
         <ExpenseForm
           editData={editExpense}
-          onSuccess={() => {
-            setShowForm(false)
-            setEditExpense(null)
-            if (!socket) fetchData()
-          }}
+          onSuccess={handleFormSuccess}
           onClose={() => { setShowForm(false); setEditExpense(null) }}
         />
       </MobileSheet>

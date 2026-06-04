@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
       : null
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4 max-w-6xl mx-auto">
+    <div className="min-h-screen pt-16 lg:pt-10 pb-12 px-4 lg:px-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Analytics</h1>

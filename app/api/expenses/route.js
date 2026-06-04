@@ -14,6 +14,8 @@ export async function GET(request) {
     const month = searchParams.get('month')
     const year = searchParams.get('year')
     const limit = parseInt(searchParams.get('limit') || '100')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const skip = (page - 1) * limit
 
     const query = { userId: payload.userId }
 
@@ -29,11 +31,15 @@ export async function GET(request) {
       query.date = { $gte: start, $lt: end }
     }
 
-    const expenses = await Expense.find(query).sort({ date: -1 }).limit(limit)
+    const [expenses, totalCount] = await Promise.all([
+      Expense.find(query).sort({ date: -1 }).skip(skip).limit(limit),
+      Expense.countDocuments(query),
+    ])
 
     const total = expenses.reduce((sum, e) => sum + e.amount, 0)
+    const totalPages = Math.ceil(totalCount / limit) || 1
 
-    return Response.json({ expenses, total })
+    return Response.json({ expenses, total, totalCount, totalPages, page })
   } catch (err) {
     console.error('Get expenses error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

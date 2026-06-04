@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { SocketProvider } from '@/context/SocketContext'
 import Navbar from '@/components/Navbar'
+import Sidebar from '@/components/Sidebar'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -18,8 +19,11 @@ export default function RootLayout({ children }) {
       <body className="antialiased">
         <AuthProvider>
           <SocketProvider>
-            <Navbar />
-            <main>{children}</main>
+            <Sidebar />
+            <div className="lg:pl-64">
+              <Navbar />
+              <main>{children}</main>
+            </div>
           </SocketProvider>
         </AuthProvider>
       </body>
