@@ -61,11 +61,11 @@ export default function LandingPage() {
           </div>
           <span className="font-bold text-lg gradient-text">SpendWise</span>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="btn-ghost">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/login" className="btn-ghost landing-nav-btn">
             Sign In
           </Link>
-          <Link href="/signup" className="btn-primary">
+          <Link href="/signup" className="btn-primary landing-nav-btn">
             Get Started
           </Link>
         </div>

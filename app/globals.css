@@ -211,3 +211,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Landing page nav buttons — smaller on mobile */
+@media (max-width: 639px) {
+  .landing-nav-btn {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.65rem !important;
+  }
+}

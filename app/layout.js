@@ -2,8 +2,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { SocketProvider } from '@/context/SocketContext'
-import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
+import MainContent from '@/components/MainContent'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -20,10 +20,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <SocketProvider>
             <Sidebar />
-            <div className="lg:pl-64">
-              <Navbar />
-              <main>{children}</main>
-            </div>
+            <MainContent>{children}</MainContent>
           </SocketProvider>
         </AuthProvider>
       </body>
