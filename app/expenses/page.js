@@ -8,7 +8,7 @@ import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import { Search, Filter, Plus, X, Loader2, SlidersHorizontal } from 'lucide-react'
 
-const CATEGORIES = ['All', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Other']
+const CATEGORIES = ['All', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 
 const MONTHS = [
   'All Months', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -115,6 +115,7 @@ export default function ExpensesPage() {
       {showForm && (
         <div className="mb-6">
           <ExpenseForm
+            key={editExpense?._id || 'new'}
             editData={editExpense}
             onSuccess={() => { setShowForm(false); setEditExpense(null); if (!socket) fetchExpenses() }}
             onClose={() => { setShowForm(false); setEditExpense(null) }}

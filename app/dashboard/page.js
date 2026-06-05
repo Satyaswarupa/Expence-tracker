@@ -145,16 +145,17 @@ export default function DashboardPage() {
     if (!expense) return
 
     if (editExpense) {
-      // Edit: update in-place
+      // Edit: update in-place (socket will also fire but map is idempotent)
       setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
-    } else {
-      // Add: go to page 1 and prepend immediately
+      fetchStats()
+    } else if (!socket) {
+      // No socket connection: add optimistically since expense:created won't fire
       setPage(1)
       setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
       setTotalPages((prev) => Math.max(prev, 1))
+      fetchStats()
     }
-    // Refresh stats in background
-    fetchStats()
+    // When socket is connected, let expense:created handle the list update
   }
 
   return (
@@ -227,6 +228,7 @@ export default function DashboardPage() {
         <div>
           {showForm ? (
             <ExpenseForm
+              key={editExpense?._id || 'new'}
               editData={editExpense}
               onSuccess={handleFormSuccess}
               onClose={() => { setShowForm(false); setEditExpense(null) }}
@@ -301,7 +303,7 @@ export default function DashboardPage() {
                     fetchStats()
                     fetchExpenses(page)
                   }}
-                  onEdit={(exp) => { setEditExpense(exp); setShowForm(true) }}
+                  onEdit={(exp) => { setEditExpense(exp); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 />
               ))}
             </div>
@@ -344,6 +346,7 @@ export default function DashboardPage() {
       {/* Mobile bottom-sheet */}
       <MobileSheet open={showForm} onClose={() => { setShowForm(false); setEditExpense(null) }}>
         <ExpenseForm
+          key={editExpense?._id || 'new'}
           editData={editExpense}
           onSuccess={handleFormSuccess}
           onClose={() => { setShowForm(false); setEditExpense(null) }}

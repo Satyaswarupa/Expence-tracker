@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
     const expense = await Expense.findOneAndUpdate(
       { _id: id, userId: payload.userId },
       { title, amount: parseFloat(amount), category, description, date: date ? new Date(date) : undefined },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     )
 
     if (!expense) return Response.json({ error: 'Expense not found' }, { status: 404 })
@@ -43,7 +43,8 @@ export async function PUT(request, { params }) {
 
     return Response.json({ expense })
   } catch (err) {
-    return Response.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('PUT /api/expenses/[id]:', err)
+    return Response.json({ error: err.message || 'Internal server error' }, { status: 500 })
   }
 }
 

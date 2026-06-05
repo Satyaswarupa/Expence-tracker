@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { X, Plus } from 'lucide-react'
 
-const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Other']
+const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 
 const CATEGORY_EMOJIS = {
   Food: '🍕',
@@ -13,6 +13,10 @@ const CATEGORY_EMOJIS = {
   Health: '💊',
   Education: '📚',
   Bills: '📋',
+  Fuel: '⛽',
+  Labour: '👷',
+  Material: '🧱',
+  Investment: '📈',
   Other: '📦',
 }
 

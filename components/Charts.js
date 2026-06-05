@@ -14,6 +14,10 @@ const CATEGORY_COLORS_MAP = {
   Health: '#ef4444',
   Education: '#06b6d4',
   Bills: '#94a3b8',
+  Fuel: '#f59e0b',
+  Labour: '#6366f1',
+  Material: '#78716c',
+  Investment: '#22c55e',
   Other: '#a855f7',
 }
 

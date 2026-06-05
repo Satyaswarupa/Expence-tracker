@@ -11,6 +11,10 @@ const CATEGORY_EMOJIS = {
   Health: '💊',
   Education: '📚',
   Bills: '📋',
+  Fuel: '⛽',
+  Labour: '👷',
+  Material: '🧱',
+  Investment: '📈',
   Other: '📦',
 }
 
@@ -22,6 +26,10 @@ const CATEGORY_COLORS = {
   Health: 'text-red-400 bg-red-500/10 border-red-500/20',
   Education: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
   Bills: 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+  Fuel: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  Labour: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+  Material: 'text-stone-400 bg-stone-500/10 border-stone-500/20',
+  Investment: 'text-green-400 bg-green-500/10 border-green-500/20',
   Other: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
 }
 
@@ -34,7 +42,7 @@ export default function ExpenseCard({ expense, onDelete, onEdit }) {
     setDeleting(true)
     try {
       const res = await fetch(`/api/expenses/${expense._id}`, { method: 'DELETE' })
-      if (res.ok) onDelete?.(expense._id)
+      if (res.ok || res.status === 404) onDelete?.(expense._id)
     } finally {
       setDeleting(false)
     }

@@ -8,7 +8,8 @@ import { TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
 
 const CATEGORY_EMOJIS = {
   Food: '🍕', Transport: '🚗', Entertainment: '🎮', Shopping: '🛍️',
-  Health: '💊', Education: '📚', Bills: '📋', Other: '📦',
+  Health: '💊', Education: '📚', Bills: '📋', Fuel: '⛽',
+  Labour: '👷', Material: '🧱', Investment: '📈', Other: '📦',
 }
 
 export default function AnalyticsPage() {
