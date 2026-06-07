@@ -7,7 +7,7 @@ import { CategoryPieChart, MonthlyBarChart } from '@/components/Charts'
 import { TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
 
 const CATEGORY_EMOJIS = {
-  Food: '🍕', Transport: '🚗', Entertainment: '🎮', Shopping: '🛍️',
+  Food: '🍕', Grocery: '🛒', Transport: '🚗', Entertainment: '🎮', Shopping: '🛍️',
   Health: '💊', Education: '📚', Bills: '📋', Fuel: '⛽',
   Labour: '👷', Material: '🧱', Investment: '📈', Other: '📦',
 }

@@ -8,7 +8,7 @@ import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import { Search, Filter, Plus, X, Loader2, SlidersHorizontal } from 'lucide-react'
 
-const CATEGORIES = ['All', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
+const CATEGORIES = ['All', 'Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 
 const MONTHS = [
   'All Months', 'January', 'February', 'March', 'April', 'May', 'June',

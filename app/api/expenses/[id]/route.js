@@ -25,13 +25,20 @@ export async function PUT(request, { params }) {
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
-    const { title, amount, category, description, date } = await request.json()
+    const { title, amount, category, description, paymentMethod, date } = await request.json()
 
     await connectDB()
 
     const expense = await Expense.findOneAndUpdate(
       { _id: id, userId: payload.userId },
-      { title, amount: parseFloat(amount), category, description, date: date ? new Date(date) : undefined },
+      {
+        title: title?.trim() || category,
+        amount: parseFloat(amount),
+        category,
+        description,
+        paymentMethod: paymentMethod || 'Cash',
+        date: date ? new Date(date) : undefined,
+      },
       { returnDocument: 'after', runValidators: true }
     )
 

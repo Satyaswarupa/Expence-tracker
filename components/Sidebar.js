@@ -4,12 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useSocket } from '@/context/SocketContext'
-import { LayoutDashboard, Receipt, BarChart3, LogOut, Wallet } from 'lucide-react'
+import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut, Wallet } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, desc: 'Overview & stats' },
   { href: '/expenses', label: 'Expenses', icon: Receipt, desc: 'All transactions' },
   { href: '/analytics', label: 'Analytics', icon: BarChart3, desc: 'Spending insights' },
+  { href: '/lending', label: 'Lending & Dues', icon: HandCoins, desc: 'Money lent & owed' },
 ]
 
 export default function Sidebar() {

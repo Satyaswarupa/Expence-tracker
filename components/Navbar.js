@@ -4,12 +4,13 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { LayoutDashboard, Receipt, BarChart3, LogOut, Menu, X, Wallet } from 'lucide-react'
+import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut, Menu, X, Wallet } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/expenses', label: 'Expenses', icon: Receipt },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/lending', label: 'Lending & Dues', icon: HandCoins },
 ]
 
 export default function Navbar() {

@@ -37,7 +37,7 @@ function MobileSheet({ open, onClose, children }) {
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
-        <div className="px-4 pb-8 max-h-[90vh] overflow-y-auto">
+        <div className="popup-scroll px-4 pb-6 h-[85vh] overflow-y-scroll overscroll-contain border-t border-white/5">
           {children}
         </div>
       </div>

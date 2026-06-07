@@ -5,6 +5,7 @@ import { Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react'
 
 const CATEGORY_EMOJIS = {
   Food: '🍕',
+  Grocery: '🛒',
   Transport: '🚗',
   Entertainment: '🎮',
   Shopping: '🛍️',
@@ -20,6 +21,7 @@ const CATEGORY_EMOJIS = {
 
 const CATEGORY_COLORS = {
   Food: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+  Grocery: 'text-lime-400 bg-lime-500/10 border-lime-500/20',
   Transport: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
   Entertainment: 'text-pink-400 bg-pink-500/10 border-pink-500/20',
   Shopping: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
@@ -67,7 +69,7 @@ export default function ExpenseCard({ expense, onDelete, onEdit }) {
         {/* Main info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-white text-sm truncate">{expense.title}</span>
+            <span className="font-medium text-white text-sm truncate">{expense.title || expense.category}</span>
             {expense.description && (
               <button
                 onClick={() => setExpanded(!expanded)}
@@ -82,6 +84,9 @@ export default function ExpenseCard({ expense, onDelete, onEdit }) {
               {expense.category}
             </span>
             <span className="text-xs text-slate-500">{dateStr}</span>
+            <span className="text-xs text-slate-500">
+              {(expense.paymentMethod || 'Cash') === 'UPI' ? '📱' : '💵'} {expense.paymentMethod || 'Cash'}
+            </span>
           </div>
         </div>
 

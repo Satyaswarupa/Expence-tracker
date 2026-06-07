@@ -56,6 +56,26 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Visible scrollbar for the mobile popup box */
+.popup-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.6) rgba(255, 255, 255, 0.04);
+}
+.popup-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.popup-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+.popup-scroll::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.6);
+  border-radius: 8px;
+}
+.popup-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.85);
+}
+
 /* ---- Reusable component classes ---- */
 
 .glass-card {
@@ -137,6 +157,7 @@ body {
   outline: none;
   appearance: none;
   -webkit-appearance: none;
+  color-scheme: dark;
 }
 
 .input-field::placeholder {
@@ -154,14 +175,15 @@ body {
   color: #e2e8f0;
 }
 
-/* Date input calendar icon color fix */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.5) sepia(1) saturate(2) hue-rotate(240deg);
+/* Date & time input picker icon */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.6;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
 

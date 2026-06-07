@@ -8,9 +8,10 @@ const expenseSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Food', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other'],
+      enum: ['Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other'],
     },
     description: { type: String, trim: true, default: '' },
+    paymentMethod: { type: String, enum: ['Cash', 'UPI'], default: 'Cash' },
     date: { type: Date, required: true, default: Date.now },
   },
   { timestamps: true }
@@ -18,5 +19,9 @@ const expenseSchema = new mongoose.Schema(
 
 expenseSchema.index({ userId: 1, date: -1 })
 expenseSchema.index({ userId: 1, category: 1 })
+
+if (process.env.NODE_ENV !== 'production') {
+  delete mongoose.models.Expense
+}
 
 export default mongoose.models.Expense || mongoose.model('Expense', expenseSchema)

@@ -8,6 +8,7 @@ import {
 
 const CATEGORY_COLORS_MAP = {
   Food: '#f97316',
+  Grocery: '#84cc16',
   Transport: '#3b82f6',
   Entertainment: '#ec4899',
   Shopping: '#eab308',

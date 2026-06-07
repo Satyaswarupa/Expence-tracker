@@ -51,10 +51,10 @@ export async function POST(request) {
     const payload = getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { title, amount, category, description, date } = await request.json()
+    const { title, amount, category, description, paymentMethod, date } = await request.json()
 
-    if (!title || !amount || !category) {
-      return Response.json({ error: 'Title, amount, and category are required' }, { status: 400 })
+    if (!amount || !category) {
+      return Response.json({ error: 'Amount and category are required' }, { status: 400 })
     }
 
     if (amount <= 0) {
@@ -65,10 +65,11 @@ export async function POST(request) {
 
     const expense = await Expense.create({
       userId: payload.userId,
-      title,
+      title: title?.trim() || category,
       amount: parseFloat(amount),
       category,
       description: description || '',
+      paymentMethod: paymentMethod || 'Cash',
       date: date ? new Date(date) : new Date(),
     })
 
