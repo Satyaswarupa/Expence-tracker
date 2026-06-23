@@ -169,8 +169,6 @@ export default function SignupPage() {
               </div>
             )}
 
-            <div id="clerk-captcha" />
-
             <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

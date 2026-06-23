@@ -85,25 +85,24 @@ export function AuthProvider({ children }) {
   }
 
   async function signup(name, email, password) {
-    if (!signUp) throw new Error('Auth is still loading, try again')
+    if (!signIn) throw new Error('Auth is still loading, try again')
 
-    const [firstName, ...rest] = name.trim().split(' ')
-    const lastName = rest.join(' ') || undefined
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Signup failed')
 
-    const { error } = await signUp.password({ emailAddress: email, password, firstName, lastName })
+    const { error } = await signIn.ticket({ ticket: data.ticket })
     if (error) throw new Error(errorMessage(error, 'Signup failed'))
 
-    if (signUp.status !== 'complete') {
-      console.error('DEBUG signUp blocked:', JSON.stringify({
-        status: signUp.status,
-        missingFields: signUp.missingFields,
-        unverifiedFields: signUp.unverifiedFields,
-        requiredFields: signUp.requiredFields,
-      }))
-      throw new Error('This account needs additional verification that is not supported here')
+    if (signIn.status !== 'complete') {
+      throw new Error('Could not complete signup')
     }
 
-    const { error: finalizeError } = await signUp.finalize()
+    const { error: finalizeError } = await signIn.finalize()
     if (finalizeError) throw new Error(errorMessage(finalizeError, 'Signup failed'))
     await fetchMe()
   }
