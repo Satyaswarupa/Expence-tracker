@@ -18,7 +18,6 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [pendingClientTrust, setPendingClientTrust] = useState(false)
 
   const fetchMe = useCallback(async () => {
     try {
@@ -47,40 +46,23 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     if (!signIn) throw new Error('Auth is still loading, try again')
 
-    const { error } = await signIn.password({ identifier: email, password })
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Login failed')
+
+    const { error } = await signIn.ticket({ ticket: data.ticket })
     if (error) throw new Error(errorMessage(error, 'Login failed'))
 
-    if (signIn.status === 'complete') {
-      const { error: finalizeError } = await signIn.finalize()
-      if (finalizeError) throw new Error(errorMessage(finalizeError, 'Login failed'))
-      await fetchMe()
-      return { needsVerification: false }
-    }
-
-    if (signIn.status === 'needs_client_trust') {
-      const { error: codeError } = await signIn.mfa.sendEmailCode()
-      if (codeError) throw new Error(errorMessage(codeError, 'Could not send verification code'))
-      setPendingClientTrust(true)
-      return { needsVerification: true }
-    }
-
-    throw new Error('This account needs additional verification that is not supported here')
-  }
-
-  async function verifyLoginCode(code) {
-    if (!signIn) throw new Error('Auth is still loading, try again')
-
-    const { error } = await signIn.mfa.verifyEmailCode({ code })
-    if (error) throw new Error(errorMessage(error, 'Invalid verification code'))
-
     if (signIn.status !== 'complete') {
-      throw new Error('Verification incomplete')
+      throw new Error('Could not complete login')
     }
 
     const { error: finalizeError } = await signIn.finalize()
     if (finalizeError) throw new Error(errorMessage(finalizeError, 'Login failed'))
-
-    setPendingClientTrust(false)
     await fetchMe()
   }
 
@@ -148,8 +130,6 @@ export function AuthProvider({ children }) {
         signup,
         logout,
         fetchMe,
-        pendingClientTrust,
-        verifyLoginCode,
         loginWithGoogle,
         signupWithGoogle,
       }}

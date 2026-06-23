@@ -8,10 +8,9 @@ import { Wallet, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import GoogleIcon from '@/components/GoogleIcon'
 
 export default function LoginPage() {
-  const { login, pendingClientTrust, verifyLoginCode, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '' })
-  const [code, setCode] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -36,20 +35,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const result = await login(form.email, form.password)
-      if (!result.needsVerification) router.push('/dashboard')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVerify = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await verifyLoginCode(code)
+      await login(form.email, form.password)
       router.push('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -75,48 +61,11 @@ export default function LoginPage() {
             </div>
             <span className="font-bold text-xl gradient-text">SpendWise</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white">
-            {pendingClientTrust ? 'Verify it\'s you' : 'Welcome back'}
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            {pendingClientTrust ? `Enter the code we sent to ${form.email}` : 'Sign in to your account'}
-          </p>
+          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+          <p className="text-slate-400 mt-1 text-sm">Sign in to your account</p>
         </div>
 
         {/* Card */}
-        {pendingClientTrust ? (
-          <div className="glass-card rounded-2xl border border-purple-500/20 p-8">
-            <form onSubmit={handleVerify} className="space-y-5">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">Verification Code</label>
-                <input
-                  name="code"
-                  value={code}
-                  onChange={(e) => { setCode(e.target.value); setError('') }}
-                  placeholder="123456"
-                  required
-                  autoFocus
-                  className="input-field text-center text-lg tracking-widest"
-                />
-              </div>
-
-              {error && (
-                <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                  {error}
-                </div>
-              )}
-
-              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-                {loading ? 'Verifying...' : 'Verify & Continue'}
-              </button>
-            </form>
-          </div>
-        ) : (
         <div className="glass-card rounded-2xl border border-purple-500/20 p-8">
           <button
             type="button"
@@ -190,16 +139,13 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-        )}
 
-        {!pendingClientTrust && (
         <p className="text-center text-slate-400 text-sm mt-6">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
             Sign up free
           </Link>
         </p>
-        )}
       </div>
     </div>
   )
