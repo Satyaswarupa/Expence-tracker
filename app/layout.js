@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { SocketProvider } from '@/context/SocketContext'
@@ -17,12 +18,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
-        <AuthProvider>
-          <SocketProvider>
-            <Sidebar />
-            <MainContent>{children}</MainContent>
-          </SocketProvider>
-        </AuthProvider>
+        <ClerkProvider>
+          <AuthProvider>
+            <SocketProvider>
+              <Sidebar />
+              <MainContent>{children}</MainContent>
+            </SocketProvider>
+          </AuthProvider>
+        </ClerkProvider>
       </body>
     </html>
   )

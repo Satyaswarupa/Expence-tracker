@@ -4,7 +4,7 @@ import { getTokenFromRequest } from '@/lib/auth'
 
 export async function DELETE(request, { params }) {
   try {
-    const payload = getTokenFromRequest(request)
+    const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params

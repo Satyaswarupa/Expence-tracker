@@ -4,7 +4,7 @@ import { getTokenFromRequest } from '@/lib/auth'
 
 export async function GET(request) {
   try {
-    const payload = getTokenFromRequest(request)
+    const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     await connectDB()
@@ -19,7 +19,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const payload = getTokenFromRequest(request)
+    const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { person, totalAmount, paidAmount, note, paymentMethod, date } = await request.json()

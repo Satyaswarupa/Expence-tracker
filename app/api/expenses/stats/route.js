@@ -5,7 +5,7 @@ import mongoose from 'mongoose'
 
 export async function GET(request) {
   try {
-    const payload = getTokenFromRequest(request)
+    const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     await connectDB()

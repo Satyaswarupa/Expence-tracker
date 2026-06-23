@@ -112,6 +112,16 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-purple-500/20 bg-[#0f0a1e]/95 backdrop-blur-xl">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-purple-500/20 flex-shrink-0">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white truncate leading-snug">{user.name}</p>
+              <p className="text-xs text-slate-500 truncate leading-snug">{user.email}</p>
+            </div>
+          </div>
+
           <div className="px-4 py-3 space-y-1">
             {navItems.map(({ href, label, icon: Icon }) => (
               <Link

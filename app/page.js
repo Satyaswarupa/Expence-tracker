@@ -28,7 +28,7 @@ const features = [
   {
     icon: Shield,
     title: 'Your Data, Only Yours',
-    desc: 'Every user sees only their own data. Military-grade JWT auth with secure HTTP-only cookies.',
+    desc: 'Every user sees only their own data. Secure authentication powered by Clerk.',
     color: 'from-emerald-500 to-teal-600',
   },
 ]

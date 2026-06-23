@@ -4,7 +4,7 @@ import { getTokenFromRequest } from '@/lib/auth'
 
 export async function GET(request) {
   try {
-    const payload = getTokenFromRequest(request)
+    const payload = await getTokenFromRequest(request)
     if (!payload) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
