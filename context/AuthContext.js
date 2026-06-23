@@ -18,7 +18,6 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [pendingVerification, setPendingVerification] = useState(false)
   const [pendingClientTrust, setPendingClientTrust] = useState(false)
 
   const fetchMe = useCallback(async () => {
@@ -94,38 +93,35 @@ export function AuthProvider({ children }) {
     const { error } = await signUp.password({ emailAddress: email, password, firstName, lastName })
     if (error) throw new Error(errorMessage(error, 'Signup failed'))
 
-    if (signUp.status === 'complete') {
-      const { error: finalizeError } = await signUp.finalize()
-      if (finalizeError) throw new Error(errorMessage(finalizeError, 'Signup failed'))
-      await fetchMe()
-      return { needsVerification: false }
-    }
-
-    if (signUp.unverifiedFields.includes('email_address')) {
-      const { error: codeError } = await signUp.verifications.sendEmailCode()
-      if (codeError) throw new Error(errorMessage(codeError, 'Could not send verification code'))
-      setPendingVerification(true)
-      return { needsVerification: true }
-    }
-
-    throw new Error('Could not complete signup')
-  }
-
-  async function verifyEmail(code) {
-    if (!signUp) throw new Error('Auth is still loading, try again')
-
-    const { error } = await signUp.verifications.verifyEmailCode({ code })
-    if (error) throw new Error(errorMessage(error, 'Invalid verification code'))
-
     if (signUp.status !== 'complete') {
-      throw new Error('Verification incomplete')
+      throw new Error('This account needs additional verification that is not supported here')
     }
 
     const { error: finalizeError } = await signUp.finalize()
     if (finalizeError) throw new Error(errorMessage(finalizeError, 'Signup failed'))
-
-    setPendingVerification(false)
     await fetchMe()
+  }
+
+  async function loginWithGoogle() {
+    if (!signIn) throw new Error('Auth is still loading, try again')
+
+    const { error } = await signIn.sso({
+      strategy: 'oauth_google',
+      redirectUrl: '/dashboard',
+      redirectCallbackUrl: '/sso-callback',
+    })
+    if (error) throw new Error(errorMessage(error, 'Google sign-in failed'))
+  }
+
+  async function signupWithGoogle() {
+    if (!signUp) throw new Error('Auth is still loading, try again')
+
+    const { error } = await signUp.sso({
+      strategy: 'oauth_google',
+      redirectUrl: '/dashboard',
+      redirectCallbackUrl: '/sso-callback',
+    })
+    if (error) throw new Error(errorMessage(error, 'Google sign-up failed'))
   }
 
   async function logout() {
@@ -147,10 +143,10 @@ export function AuthProvider({ children }) {
         signup,
         logout,
         fetchMe,
-        pendingVerification,
-        verifyEmail,
         pendingClientTrust,
         verifyLoginCode,
+        loginWithGoogle,
+        signupWithGoogle,
       }}
     >
       {children}

@@ -5,15 +5,27 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { Wallet, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import GoogleIcon from '@/components/GoogleIcon'
 
 export default function LoginPage() {
-  const { login, pendingClientTrust, verifyLoginCode } = useAuth()
+  const { login, pendingClientTrust, verifyLoginCode, loginWithGoogle } = useAuth()
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '' })
   const [code, setCode] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const handleGoogle = async () => {
+    setGoogleLoading(true)
+    try {
+      await loginWithGoogle()
+    } catch (err) {
+      setError(err.message)
+      setGoogleLoading(false)
+    }
+  }
 
   const handleChange = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
@@ -106,6 +118,26 @@ export default function LoginPage() {
           </div>
         ) : (
         <div className="glass-card rounded-2xl border border-purple-500/20 p-8">
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium text-white transition-colors disabled:opacity-60"
+          >
+            {googleLoading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <GoogleIcon className="w-4 h-4" />
+            )}
+            {googleLoading ? 'Redirecting...' : 'Continue with Google'}
+          </button>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-xs text-slate-500">or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-2">Email Address</label>
