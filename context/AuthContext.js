@@ -94,6 +94,12 @@ export function AuthProvider({ children }) {
     if (error) throw new Error(errorMessage(error, 'Signup failed'))
 
     if (signUp.status !== 'complete') {
+      console.error('DEBUG signUp blocked:', JSON.stringify({
+        status: signUp.status,
+        missingFields: signUp.missingFields,
+        unverifiedFields: signUp.unverifiedFields,
+        requiredFields: signUp.requiredFields,
+      }))
       throw new Error('This account needs additional verification that is not supported here')
     }
 
