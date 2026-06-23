@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, X, Trash2, Loader2 } from 'lucide-react'
+import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
 
 const PAYMENT_METHODS = ['Cash', 'UPI']
 const PAYMENT_METHOD_EMOJIS = { Cash: '💵', UPI: '📱' }
 
 const pad = (n) => String(n).padStart(2, '0')
-const todayStr = () => new Date().toISOString().split('T')[0]
+const todayStr = () => toLocalDateInputValue()
 const nowTimeStr = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}` }
 
 const blankForm = () => ({
@@ -48,7 +49,7 @@ export default function PendingPaymentTracker() {
       const res = await fetch('/api/pending-payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, date: `${form.date}T${form.time}` }),
+        body: JSON.stringify({ ...form, date: combineLocalDateTime(form.date, form.time) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Plus } from 'lucide-react'
+import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
 
 const CATEGORIES = ['Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 
@@ -38,7 +39,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
     category: editData?.category || 'Food',
     paymentMethod: editData?.paymentMethod || 'Cash',
     description: editData?.description || '',
-    date: editData?.date ? new Date(editData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    date: toLocalDateInputValue(editData?.date),
     time: editData?.date ? timeOf(new Date(editData.date)) : timeOf(new Date()),
   })
   const [loading, setLoading] = useState(false)
@@ -61,7 +62,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, date: `${form.date}T${form.time}` }),
+        body: JSON.stringify({ ...form, date: combineLocalDateTime(form.date, form.time) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -69,7 +70,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
       onSuccess?.(data.expense)
       if (!editData) {
         const now = new Date()
-        setForm({ title: '', amount: '', category: 'Food', paymentMethod: 'Cash', description: '', date: now.toISOString().split('T')[0], time: timeOf(now) })
+        setForm({ title: '', amount: '', category: 'Food', paymentMethod: 'Cash', description: '', date: toLocalDateInputValue(now), time: timeOf(now) })
       }
     } catch (err) {
       setError(err.message)

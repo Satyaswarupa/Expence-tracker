@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, X, Check, Loader2 } from 'lucide-react'
+import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
 
 const PAYMENT_METHODS = ['Cash', 'UPI']
 const PAYMENT_METHOD_EMOJIS = { Cash: '💵', UPI: '📱' }
 
 const pad = (n) => String(n).padStart(2, '0')
-const todayStr = () => new Date().toISOString().split('T')[0]
+const todayStr = () => toLocalDateInputValue()
 const nowTimeStr = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}` }
 
 const blankForm = () => ({
@@ -42,7 +43,7 @@ export default function LendingTracker() {
     setError('')
     try {
       const expectedReturnDate = form.expectedReturnDate
-        ? `${form.expectedReturnDate}T${form.expectedReturnTime || '00:00'}`
+        ? combineLocalDateTime(form.expectedReturnDate, form.expectedReturnTime || '00:00')
         : ''
 
       const res = await fetch('/api/lendings', {
