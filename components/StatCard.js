@@ -1,30 +1,30 @@
 export default function StatCard({ title, value, subtitle, icon: Icon, color = 'purple', trend }) {
   const colorMap = {
-    purple: 'from-purple-500 to-indigo-600 shadow-purple-500/20',
-    emerald: 'from-emerald-500 to-teal-600 shadow-emerald-500/20',
-    amber: 'from-amber-500 to-orange-600 shadow-amber-500/20',
-    rose: 'from-rose-500 to-pink-600 shadow-rose-500/20',
-    blue: 'from-blue-500 to-cyan-600 shadow-blue-500/20',
+    purple: 'bg-accent/15 text-accent',
+    emerald: 'bg-success/15 text-success',
+    amber: 'bg-[#F4A93B]/15 text-[#F4A93B]',
+    rose: 'bg-danger/15 text-danger',
+    blue: 'bg-[#4C8DD6]/15 text-[#4C8DD6]',
   }
 
   return (
-    <div className="glass-card rounded-2xl p-5 border border-white/5 hover:border-purple-500/20 transition-all duration-300 group">
+    <div className="glass-card rounded-2xl p-5 hover:border-accent/25 transition-all duration-300 group">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorMap[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className="w-5 h-5 text-white" />
+        <div className={`w-10 h-10 rounded-xl ${colorMap[color]} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className="w-5 h-5" />
         </div>
         {trend !== undefined && (
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-            trend >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+            trend >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'
           }`}>
             {trend >= 0 ? '+' : ''}{trend}%
           </span>
         )}
       </div>
       <div className="space-y-1">
-        <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
-        <p className="text-sm font-medium text-slate-300">{title}</p>
-        {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+        <p className="font-display text-2xl font-bold text-ink tabular-nums">{value}</p>
+        <p className="text-sm font-medium text-ink-soft">{title}</p>
+        {subtitle && <p className="text-xs text-ink-faint">{subtitle}</p>}
       </div>
     </div>
   )

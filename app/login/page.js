@@ -4,8 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { Wallet, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import GoogleIcon from '@/components/GoogleIcon'
+
+const FEATURES = [
+  'Auto category insights every month',
+  'Split & partial payments made simple',
+  'Know who owes you, instantly',
+]
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth()
@@ -45,65 +51,75 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative">
-      {/* Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] right-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[100px]" />
-        <div className="absolute bottom-[10%] left-[5%] w-[400px] h-[400px] rounded-full bg-indigo-600/8 blur-[80px]" />
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left brand panel — desktop only */}
+      <div className="hidden lg:flex lg:w-[46%] bg-accent text-white p-14 flex-col relative overflow-hidden">
+        <div className="absolute w-[420px] h-[420px] rounded-full bg-white/10 -right-36 -top-32 pointer-events-none" />
+        <div className="absolute w-[260px] h-[260px] rounded-full bg-white/10 -left-24 -bottom-20 pointer-events-none" />
+
+        <Link href="/" className="flex items-center gap-3 relative z-10 w-fit">
+          <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <span className="font-display font-extrabold text-xl leading-none">M</span>
+          </div>
+          <span className="font-display font-bold text-xl">MoneyJot</span>
+        </Link>
+
+        <div className="flex-1" />
+
+        <div className="relative z-10 max-w-md">
+          <h2 className="font-display font-bold text-4xl leading-tight mb-4">
+            Jot every rupee. See where it really goes.
+          </h2>
+          <p className="text-white/85 mb-8 leading-relaxed">
+            Track daily spends, split shared bills, and follow money you&apos;ve lent — all in one warm little place.
+          </p>
+          <div className="flex flex-col gap-3.5">
+            {FEATURES.map((f) => (
+              <div key={f} className="flex items-center gap-3 text-sm font-medium">
+                <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">✦</div>
+                {f}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <Wallet className="w-5 h-5 text-white" />
+      {/* Right form panel */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          {/* Mobile-only header */}
+          <div className="lg:hidden text-center mb-9">
+            <div className="w-16 h-16 rounded-2xl bg-accent inline-flex items-center justify-center shadow-lg shadow-accent/30">
+              <span className="font-display font-extrabold text-3xl text-white leading-none">M</span>
             </div>
-            <span className="font-bold text-xl gradient-text">SpendWise</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-slate-400 mt-1 text-sm">Sign in to your account</p>
-        </div>
-
-        {/* Card */}
-        <div className="glass-card rounded-2xl border border-purple-500/20 p-8">
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium text-white transition-colors disabled:opacity-60"
-          >
-            {googleLoading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <GoogleIcon className="w-4 h-4" />
-            )}
-            {googleLoading ? 'Redirecting...' : 'Continue with Google'}
-          </button>
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-slate-500">or</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="font-display font-bold text-xl text-ink mt-3">MoneyJot</div>
+            <div className="text-sm text-ink-muted mt-1">Your money, neatly jotted.</div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <h1 className="font-display text-2xl font-bold text-ink">Welcome back</h1>
+          <p className="text-ink-muted text-sm mt-1 mb-7">Sign in to keep jotting your expenses.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">Email Address</label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                required
-                className="input-field"
-              />
+              <label className="block text-xs font-semibold text-ink-soft mb-1.5">Email</label>
+              <div className="input-field flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-ink-faint flex-shrink-0" />
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                  required
+                  className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">Password</label>
-              <div className="relative">
+              <label className="block text-xs font-semibold text-ink-soft mb-1.5">Password</label>
+              <div className="input-field flex items-center gap-2.5">
+                <Lock className="w-4 h-4 text-ink-faint flex-shrink-0" />
                 <input
                   name="password"
                   type={showPass ? 'text' : 'password'}
@@ -111,12 +127,12 @@ export default function LoginPage() {
                   onChange={handleChange}
                   placeholder="Your password"
                   required
-                  className="input-field pr-11"
+                  className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="text-ink-faint hover:text-ink-soft transition-colors flex-shrink-0"
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -124,7 +140,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              <div className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3">
                 {error}
               </div>
             )}
@@ -138,14 +154,34 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-        </div>
 
-        <p className="text-center text-slate-400 text-sm mt-6">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
-            Sign up free
-          </Link>
-        </p>
+          <div className="flex items-center gap-3 my-6 text-ink-faint text-xs font-medium">
+            <div className="flex-1 h-px bg-line" />
+            or continue with
+            <div className="flex-1 h-px bg-line" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-line hover:bg-cream text-sm font-semibold text-ink-soft transition-colors disabled:opacity-60"
+          >
+            {googleLoading ? (
+              <div className="w-4 h-4 border-2 border-ink-faint/30 border-t-ink-faint rounded-full animate-spin" />
+            ) : (
+              <GoogleIcon className="w-4 h-4" />
+            )}
+            {googleLoading ? 'Redirecting...' : 'Continue with Google'}
+          </button>
+
+          <p className="text-center text-ink-muted text-sm mt-7">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-accent font-bold">
+              Sign up free
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

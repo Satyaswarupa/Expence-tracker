@@ -7,10 +7,12 @@ import { useSocket } from '@/context/SocketContext'
 import StatCard from '@/components/StatCard'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
-import { SpendingAreaChart } from '@/components/Charts'
-import { TrendingUp, Wallet, Receipt, Tag, Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import BottomNav from '@/components/BottomNav'
+import { SpendingAreaChart, CATEGORY_COLORS_MAP } from '@/components/Charts'
+import { TrendingUp, Wallet, Receipt, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
 
 const PAGE_SIZE = 8
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 function MobileSheet({ open, onClose, children }) {
   const [visible, setVisible] = useState(false)
@@ -30,14 +32,14 @@ function MobileSheet({ open, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <div
-        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${animOut ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${animOut ? 'opacity-0' : 'opacity-100'}`}
         onClick={onClose}
       />
-      <div className={`absolute bottom-0 left-0 right-0 bg-[#120d24] border-t border-purple-500/30 rounded-t-2xl ${animOut ? 'sheet-exit' : 'sheet-enter'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-white border-t border-line rounded-t-2xl ${animOut ? 'sheet-exit' : 'sheet-enter'}`}>
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div className="w-10 h-1 rounded-full bg-black/10" />
         </div>
-        <div className="popup-scroll px-4 pb-6 h-[85vh] overflow-y-scroll overscroll-contain border-t border-white/5">
+        <div className="popup-scroll px-4 pb-6 h-[85vh] overflow-y-scroll overscroll-contain border-t border-line">
           {children}
         </div>
       </div>
@@ -58,6 +60,10 @@ export default function DashboardPage() {
   const [editExpense, setEditExpense] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pageLoading, setPageLoading] = useState(false)
+  const [owedToYou, setOwedToYou] = useState(0)
+  const [youOwe, setYouOwe] = useState(0)
+  const now = new Date()
+  const [selectedMonth, setSelectedMonth] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
@@ -67,6 +73,25 @@ export default function DashboardPage() {
     const res = await fetch('/api/expenses/stats')
     if (res.ok) setStats(await res.json())
   }, [])
+
+  // Real money & people totals (same aggregation already used on the People page)
+  useEffect(() => {
+    if (!user) return
+    fetch('/api/lendings')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const total = (data?.lendings || []).reduce((sum, l) => sum + l.amount, 0)
+        setOwedToYou(total)
+      })
+      .catch(() => {})
+    fetch('/api/pending-payments')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const total = (data?.payments || []).reduce((sum, p) => sum + (p.totalAmount - p.paidAmount), 0)
+        setYouOwe(total)
+      })
+      .catch(() => {})
+  }, [user])
 
   const fetchExpenses = useCallback(async (p) => {
     const res = await fetch(`/api/expenses?limit=${PAGE_SIZE}&page=${p}`)
@@ -127,7 +152,7 @@ export default function DashboardPage() {
   if (authLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
       </div>
     )
   }
@@ -158,26 +183,122 @@ export default function DashboardPage() {
     // When socket is connected, let expense:created handle the list update
   }
 
+  const openAddForm = () => { setShowForm(true); setEditExpense(null) }
+
+  const topCategories = (stats?.byCategory || []).slice(0, 3)
+  const catTotal = stats?.allTime?.total || 0
+
+  // Month selector — derives from monthlyTrend already returned by /api/expenses/stats, no new fetch
+  const monthOptions = Array.from({ length: now.getMonth() + 1 }, (_, i) => ({ month: i + 1, year: now.getFullYear() }))
+  const isCurrentMonth = selectedMonth.month === now.getMonth() + 1 && selectedMonth.year === now.getFullYear()
+  const selectedTrend = isCurrentMonth
+    ? stats?.thisMonth
+    : stats?.monthlyTrend?.find((m) => m._id.month === selectedMonth.month && m._id.year === selectedMonth.year)
+  const selectedTotal = selectedTrend?.total || 0
+  const selectedCount = selectedTrend?.count || 0
+  const selectedLabel = isCurrentMonth ? 'This month' : MONTH_NAMES[selectedMonth.month - 1]
+
   return (
-    <div className="min-h-screen pt-16 lg:pt-10 pb-12 px-4 lg:px-8 max-w-7xl mx-auto">
+    <div className="min-h-screen pt-16 lg:pt-10 pb-28 lg:pb-12 px-4 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-6 lg:mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="font-display text-2xl font-bold text-ink">
             {greeting}, {user.name?.split(' ')[0]} 👋
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Here&apos;s your spending overview</p>
+          <p className="text-ink-muted text-sm mt-1">Here&apos;s your spending overview</p>
         </div>
-        <button
-          onClick={() => { setShowForm(true); setEditExpense(null) }}
-          className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-        >
-          <Plus className="w-5 h-5" />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <select
+              value={`${selectedMonth.month}-${selectedMonth.year}`}
+              onChange={(e) => {
+                const [m, y] = e.target.value.split('-').map(Number)
+                setSelectedMonth({ month: m, year: y })
+              }}
+              className="appearance-none bg-white border border-line rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-ink-soft cursor-pointer"
+            >
+              {monthOptions.map((o) => (
+                <option key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>
+                  {MONTH_NAMES[o.month - 1]} {o.year}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-ink-faint absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+          <button
+            onClick={openAddForm}
+            className="hidden lg:flex items-center justify-center w-9 h-9 rounded-xl bg-accent text-white shadow-lg shadow-accent/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile hero card — real data only (no budget field exists in this app) */}
+      <div className="lg:hidden mb-4 rounded-[22px] bg-accent text-white p-5 relative overflow-hidden shadow-lg shadow-accent/25">
+        <div className="absolute w-40 h-40 rounded-full bg-white/10 -right-10 -top-14 pointer-events-none" />
+        <div className="text-sm text-white/85 relative">Spent {isCurrentMonth ? 'this month' : `in ${selectedLabel}`}</div>
+        <div className="font-display text-4xl font-bold mt-0.5 relative">
+          {loading ? '...' : fmtCurrency(selectedTotal)}
+        </div>
+        <div className="text-xs text-white/80 mt-2 relative">
+          {selectedCount} transactions
+        </div>
+      </div>
+
+      {/* Mobile money & people row — real totals from /api/lendings + /api/pending-payments */}
+      <div className="lg:hidden mb-4 flex gap-3">
+        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card rounded-2xl p-4">
+          <div className="text-xs text-ink-muted font-medium truncate">You owe</div>
+          <div className="font-display text-xl font-bold text-danger mt-0.5 truncate">{fmtCurrency(youOwe)}</div>
+        </button>
+        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card rounded-2xl p-4">
+          <div className="text-xs text-ink-muted font-medium truncate">Owed to you</div>
+          <div className="font-display text-xl font-bold text-success mt-0.5 truncate">{fmtCurrency(owedToYou)}</div>
         </button>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Mobile by-category card */}
+      <div className="lg:hidden mb-6 glass-card rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display font-bold text-sm text-ink">By category</h2>
+          <button onClick={() => router.push('/analytics')} className="text-xs text-accent font-bold">See all</button>
+        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-16">
+            <Loader2 className="w-5 h-5 text-accent animate-spin" />
+          </div>
+        ) : stats?.byCategory?.length ? (
+          <>
+            <div className="flex h-3.5 rounded-full overflow-hidden mb-3.5">
+              {stats.byCategory.map((cat) => (
+                <div
+                  key={cat._id}
+                  style={{
+                    width: `${catTotal ? (cat.total / catTotal) * 100 : 0}%`,
+                    background: CATEGORY_COLORS_MAP[cat._id] || '#B9A99C',
+                  }}
+                />
+              ))}
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {topCategories.map((cat) => (
+                <div key={cat._id} className="flex items-center gap-2.5">
+                  <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: CATEGORY_COLORS_MAP[cat._id] || '#B9A99C' }} />
+                  <div className="flex-1 text-sm text-ink-soft font-medium">{cat._id}</div>
+                  <div className="font-display text-sm font-bold text-ink">{fmtCurrency(cat.total)}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-center text-ink-faint text-sm py-4">No expenses yet</div>
+        )}
+      </div>
+
+      {/* Stats grid — desktop only, mobile has its own hero/category cards above */}
+      <div className="hidden lg:grid lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Total Spent"
           value={loading ? '...' : fmtCurrency(stats?.allTime?.total)}
@@ -186,9 +307,9 @@ export default function DashboardPage() {
           color="purple"
         />
         <StatCard
-          title="This Month"
-          value={loading ? '...' : fmtCurrency(stats?.thisMonth?.total)}
-          subtitle={`${stats?.thisMonth?.count || 0} this month`}
+          title={isCurrentMonth ? 'This Month' : selectedLabel}
+          value={loading ? '...' : fmtCurrency(selectedTotal)}
+          subtitle={`${selectedCount} transactions`}
           icon={TrendingUp}
           color="emerald"
         />
@@ -208,15 +329,15 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="hidden lg:grid lg:grid-cols-3 gap-6">
         {/* Chart */}
         <div className="lg:col-span-2">
-          <div className="glass-card rounded-2xl border border-white/5 p-5">
-            <h2 className="text-sm font-semibold text-white mb-1">Spending Over Time</h2>
-            <p className="text-xs text-slate-500 mb-4">Last 14 days</p>
+          <div className="glass-card rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-ink mb-1">Spending Over Time</h2>
+            <p className="text-xs text-ink-faint mb-4">Last 14 days</p>
             {loading ? (
               <div className="flex items-center justify-center h-[280px]">
-                <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                <Loader2 className="w-6 h-6 text-accent animate-spin" />
               </div>
             ) : (
               <SpendingAreaChart expenses={expenses} />
@@ -234,11 +355,11 @@ export default function DashboardPage() {
               onClose={() => { setShowForm(false); setEditExpense(null) }}
             />
           ) : (
-            <div className="glass-card rounded-2xl border border-white/5 p-5">
-              <h2 className="text-sm font-semibold text-white mb-4">Top Categories</h2>
+            <div className="glass-card rounded-2xl p-5">
+              <h2 className="text-sm font-semibold text-ink mb-4">Top Categories</h2>
               {loading ? (
                 <div className="flex items-center justify-center h-32">
-                  <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
                 </div>
               ) : stats?.byCategory?.length ? (
                 <div className="space-y-3">
@@ -249,12 +370,12 @@ export default function DashboardPage() {
                     return (
                       <div key={cat._id}>
                         <div className="flex items-center justify-between text-sm mb-1">
-                          <span className="text-slate-300">{cat._id}</span>
-                          <span className="text-white font-medium">{fmtCurrency(cat.total)}</span>
+                          <span className="text-ink-soft">{cat._id}</span>
+                          <span className="text-ink font-medium">{fmtCurrency(cat.total)}</span>
                         </div>
-                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-line rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
+                            className="h-full bg-accent rounded-full transition-all duration-500"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
@@ -263,7 +384,7 @@ export default function DashboardPage() {
                   })}
                 </div>
               ) : (
-                <div className="text-center text-slate-500 text-sm py-8">
+                <div className="text-center text-ink-faint text-sm py-8">
                   No expenses yet. Add your first one!
                 </div>
               )}
@@ -281,15 +402,15 @@ export default function DashboardPage() {
       {/* Recent expenses */}
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white">Recent Transactions</h2>
-          <button onClick={() => router.push('/expenses')} className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
+          <h2 className="text-sm font-semibold text-ink">Recent Transactions</h2>
+          <button onClick={() => router.push('/expenses')} className="text-xs text-accent hover:opacity-80 transition-opacity">
             View all →
           </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+            <Loader2 className="w-6 h-6 text-accent animate-spin" />
           </div>
         ) : expenses.length ? (
           <>
@@ -314,17 +435,17 @@ export default function DashboardPage() {
                 <button
                   onClick={() => goToPage(page - 1)}
                   disabled={page <= 1 || pageLoading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-line text-ink-muted hover:text-ink hover:border-accent/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-faint">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => goToPage(page + 1)}
                   disabled={page >= totalPages || pageLoading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-line text-ink-muted hover:text-ink hover:border-accent/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>
@@ -332,10 +453,10 @@ export default function DashboardPage() {
             )}
           </>
         ) : (
-          <div className="glass-card rounded-2xl border border-white/5 p-12 text-center">
+          <div className="glass-card rounded-2xl p-12 text-center">
             <div className="text-4xl mb-3">💸</div>
-            <p className="text-white font-medium mb-1">No expenses yet</p>
-            <p className="text-slate-500 text-sm">Add your first expense to get started</p>
+            <p className="text-ink font-medium mb-1">No expenses yet</p>
+            <p className="text-ink-faint text-sm">Add your first expense to get started</p>
             <button onClick={() => setShowForm(true)} className="btn-primary mt-4 inline-flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add First Expense
             </button>
@@ -352,6 +473,8 @@ export default function DashboardPage() {
           onClose={() => { setShowForm(false); setEditExpense(null) }}
         />
       </MobileSheet>
+
+      <BottomNav onAdd={openAddForm} />
     </div>
   )
 }

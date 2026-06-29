@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useSocket } from '@/context/SocketContext'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
+import BottomNav from '@/components/BottomNav'
 import { Search, Filter, Plus, X, Loader2, SlidersHorizontal } from 'lucide-react'
 
 const CATEGORIES = ['All', 'Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
@@ -78,7 +79,7 @@ export default function ExpensesPage() {
   if (authLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
       </div>
     )
   }
@@ -92,22 +93,24 @@ export default function ExpensesPage() {
   const currentYear = new Date().getFullYear()
   const years = [currentYear, currentYear - 1, currentYear - 2].map(String)
 
+  const openAddForm = () => { setShowForm(true); setEditExpense(null) }
+
   return (
-    <div className="min-h-screen pt-16 lg:pt-10 pb-12 px-4 lg:px-8 max-w-5xl mx-auto">
+    <div className="min-h-screen pt-16 lg:pt-10 pb-28 lg:pb-12 px-4 lg:px-8 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">All Expenses</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="font-display text-2xl font-bold text-ink">All Expenses</h1>
+          <p className="text-ink-muted text-sm mt-1">
             {filtered.length} transactions · Total: ₹{total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
         <button
-          onClick={() => { setShowForm(true); setEditExpense(null) }}
-          className="btn-primary flex items-center gap-2"
+          onClick={openAddForm}
+          className="hidden lg:flex btn-primary items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Add Expense</span>
+          <span>Add Expense</span>
         </button>
       </div>
 
@@ -124,10 +127,10 @@ export default function ExpensesPage() {
       )}
 
       {/* Search + filters */}
-      <div className="glass-card rounded-2xl border border-white/5 p-4 mb-5">
+      <div className="glass-card rounded-2xl p-4 mb-5">
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -138,7 +141,7 @@ export default function ExpensesPage() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-              showFilters ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+              showFilters ? 'bg-accent/15 border-accent/40 text-accent' : 'border-line text-ink-muted hover:text-ink hover:border-accent/30'
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -147,10 +150,10 @@ export default function ExpensesPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-white/5 grid sm:grid-cols-3 gap-3">
+          <div className="mt-4 pt-4 border-t border-line-soft grid sm:grid-cols-3 gap-3">
             {/* Category */}
             <div>
-              <label className="block text-xs text-slate-500 mb-2">Category</label>
+              <label className="block text-xs text-ink-faint mb-2">Category</label>
               <select
                 value={filters.category}
                 onChange={(e) => setFilters((p) => ({ ...p, category: e.target.value }))}
@@ -162,7 +165,7 @@ export default function ExpensesPage() {
 
             {/* Month */}
             <div>
-              <label className="block text-xs text-slate-500 mb-2">Month</label>
+              <label className="block text-xs text-ink-faint mb-2">Month</label>
               <select
                 value={filters.month}
                 onChange={(e) => setFilters((p) => ({ ...p, month: e.target.value }))}
@@ -177,7 +180,7 @@ export default function ExpensesPage() {
 
             {/* Year */}
             <div>
-              <label className="block text-xs text-slate-500 mb-2">Year</label>
+              <label className="block text-xs text-ink-faint mb-2">Year</label>
               <select
                 value={filters.year}
                 onChange={(e) => setFilters((p) => ({ ...p, year: e.target.value }))}
@@ -198,8 +201,8 @@ export default function ExpensesPage() {
             onClick={() => setFilters((p) => ({ ...p, category: cat }))}
             className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
               filters.category === cat
-                ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                : 'border-white/5 text-slate-500 hover:text-white hover:border-white/15'
+                ? 'bg-accent/15 border-accent/40 text-accent'
+                : 'border-line text-ink-faint hover:text-ink hover:border-accent/25'
             }`}
           >
             {cat}
@@ -210,7 +213,7 @@ export default function ExpensesPage() {
       {/* Expenses list */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+          <Loader2 className="w-8 h-8 text-accent animate-spin" />
         </div>
       ) : filtered.length ? (
         <div className="space-y-2">
@@ -224,14 +227,16 @@ export default function ExpensesPage() {
           ))}
         </div>
       ) : (
-        <div className="glass-card rounded-2xl border border-white/5 p-16 text-center">
+        <div className="glass-card rounded-2xl p-16 text-center">
           <div className="text-4xl mb-3">🔍</div>
-          <p className="text-white font-medium mb-1">No expenses found</p>
-          <p className="text-slate-500 text-sm">
+          <p className="text-ink font-medium mb-1">No expenses found</p>
+          <p className="text-ink-faint text-sm">
             {search ? 'Try a different search term' : 'Add your first expense to get started'}
           </p>
         </div>
       )}
+
+      <BottomNav onAdd={openAddForm} />
     </div>
   )
 }

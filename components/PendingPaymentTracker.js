@@ -15,7 +15,7 @@ const blankForm = () => ({
   person: '', totalAmount: '', paidAmount: '', date: todayStr(), time: nowTimeStr(), paymentMethod: 'Cash', note: '',
 })
 
-export default function PendingPaymentTracker() {
+export default function PendingPaymentTracker({ onTotalChange } = {}) {
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -90,25 +90,27 @@ export default function PendingPaymentTracker() {
 
   const totalDue = payments.reduce((sum, p) => sum + (p.totalAmount - p.paidAmount), 0)
 
+  useEffect(() => { onTotalChange?.(totalDue) }, [totalDue])
+
   return (
-    <div className="glass-card rounded-2xl border border-white/5 p-5">
+    <div className="glass-card rounded-2xl p-5">
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-sm font-semibold text-white">Pending Payments</h2>
+        <h2 className="text-sm font-semibold text-ink">Pending Payments</h2>
         <button
           onClick={() => { setShowForm((s) => !s); setError('') }}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+          className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-cream transition-all"
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         </button>
       </div>
       {!loading && payments.length > 0 && (
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-ink-faint mb-4">
           {fmtCurrency(totalDue)} still owed across {payments.length} {payments.length === 1 ? 'order' : 'orders'}
         </p>
       )}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="space-y-3 mb-4 p-3 rounded-xl border border-white/5 bg-white/3">
+        <form onSubmit={handleAdd} className="space-y-3 mb-4 p-3 rounded-xl border border-line bg-cream">
           <input
             value={form.person}
             onChange={(e) => setForm((p) => ({ ...p, person: e.target.value }))}
@@ -137,7 +139,7 @@ export default function PendingPaymentTracker() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="min-w-0">
-              <label className="block text-[11px] text-slate-500 mb-1">Date</label>
+              <label className="block text-[11px] text-ink-faint mb-1">Date</label>
               <input
                 type="date"
                 value={form.date}
@@ -146,7 +148,7 @@ export default function PendingPaymentTracker() {
               />
             </div>
             <div className="min-w-0">
-              <label className="block text-[11px] text-slate-500 mb-1">Time</label>
+              <label className="block text-[11px] text-ink-faint mb-1">Time</label>
               <input
                 type="time"
                 value={form.time}
@@ -163,8 +165,8 @@ export default function PendingPaymentTracker() {
                 onClick={() => setForm((p) => ({ ...p, paymentMethod: pm }))}
                 className={`flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                   form.paymentMethod === pm
-                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
-                    : 'border-white/5 text-slate-500 hover:border-purple-500/30 hover:text-slate-300 bg-white/3'
+                    ? 'bg-accent/15 border-accent/50 text-accent'
+                    : 'border-line text-ink-faint hover:border-accent/30 hover:text-ink-soft bg-white'
                 }`}
               >
                 <span className="text-base">{PAYMENT_METHOD_EMOJIS[pm]}</span>
@@ -178,7 +180,7 @@ export default function PendingPaymentTracker() {
             placeholder="Note (optional)"
             className="input-field"
           />
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className="text-red-500 text-xs">{error}</p>}
           <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2">
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -192,7 +194,7 @@ export default function PendingPaymentTracker() {
 
       {loading ? (
         <div className="flex items-center justify-center h-24">
-          <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+          <Loader2 className="w-5 h-5 text-accent animate-spin" />
         </div>
       ) : payments.length ? (
         <div className="space-y-3">
@@ -200,33 +202,33 @@ export default function PendingPaymentTracker() {
             const remaining = p.totalAmount - p.paidAmount
             const pct = p.totalAmount ? Math.round((p.paidAmount / p.totalAmount) * 100) : 0
             return (
-              <div key={p._id} className="p-3 rounded-xl border border-white/5 bg-white/3">
+              <div key={p._id} className="p-3 rounded-xl border border-line bg-cream">
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="min-w-0">
-                    <div className="font-medium text-white text-sm truncate">{p.person}</div>
-                    <div className="text-xs text-slate-500 truncate">
+                    <div className="font-medium text-ink text-sm truncate">{p.person}</div>
+                    <div className="text-xs text-ink-faint truncate">
                       {fmtDate(p.date)} · {(p.paymentMethod || 'Cash') === 'UPI' ? '📱' : '💵'} {p.paymentMethod || 'Cash'}
                       {p.note && ` · ${p.note}`}
                     </div>
                   </div>
                   <button
                     onClick={() => handleRemove(p._id)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0"
+                    className="p-1.5 rounded-lg text-ink-faint hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                <div className="h-1.5 bg-line rounded-full overflow-hidden mb-1.5">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-purple-500 rounded-full transition-all duration-500"
+                    className="h-full bg-accent rounded-full transition-all duration-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-slate-400">
+                  <span className="text-ink-muted">
                     Paid {fmtCurrency(p.paidAmount)} of {fmtCurrency(p.totalAmount)}
                   </span>
-                  <span className={`font-medium ${remaining > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  <span className={`font-medium ${remaining > 0 ? 'text-[#C97F3A]' : 'text-success'}`}>
                     {remaining > 0 ? `${fmtCurrency(remaining)} due` : 'Settled'}
                   </span>
                 </div>
@@ -244,7 +246,7 @@ export default function PendingPaymentTracker() {
                     />
                     <button
                       onClick={() => handleAddPayment(p._id)}
-                      className="px-4 rounded-xl text-xs font-medium bg-purple-500/20 border border-purple-500/50 text-purple-300 hover:bg-purple-500/30 transition-all whitespace-nowrap"
+                      className="px-4 rounded-xl text-xs font-medium bg-accent/15 border border-accent/50 text-accent hover:bg-accent/25 transition-all whitespace-nowrap"
                     >
                       Pay
                     </button>
@@ -255,7 +257,7 @@ export default function PendingPaymentTracker() {
           })}
         </div>
       ) : (
-        <div className="text-center text-slate-500 text-sm py-6">
+        <div className="text-center text-ink-faint text-sm py-6">
           No pending payments — all paid up!
         </div>
       )}

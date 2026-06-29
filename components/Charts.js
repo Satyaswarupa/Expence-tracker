@@ -6,29 +6,29 @@ import {
   AreaChart, Area,
 } from 'recharts'
 
-const CATEGORY_COLORS_MAP = {
-  Food: '#f97316',
-  Grocery: '#84cc16',
-  Transport: '#3b82f6',
-  Entertainment: '#ec4899',
-  Shopping: '#eab308',
-  Health: '#ef4444',
-  Education: '#06b6d4',
-  Bills: '#94a3b8',
-  Fuel: '#f59e0b',
-  Labour: '#6366f1',
-  Material: '#78716c',
-  Investment: '#22c55e',
-  Other: '#a855f7',
+export const CATEGORY_COLORS_MAP = {
+  Food: '#EE6C4D',
+  Grocery: '#8FAE52',
+  Transport: '#2E9E83',
+  Entertainment: '#9B6BC9',
+  Shopping: '#F4A93B',
+  Health: '#E0719A',
+  Education: '#3FA7C4',
+  Bills: '#4C8DD6',
+  Fuel: '#C97F3A',
+  Labour: '#7C8AA8',
+  Material: '#A9876F',
+  Investment: '#5C9E6B',
+  Other: '#B9A99C',
 }
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const tooltipStyle = {
-  backgroundColor: '#1e1333',
-  border: '1px solid rgba(139,92,246,0.2)',
+  backgroundColor: '#ffffff',
+  border: '1px solid #EFE6DC',
   borderRadius: '12px',
-  color: '#e2e8f0',
+  color: '#2B2422',
   fontSize: '12px',
 }
 
@@ -54,7 +54,7 @@ export function CategoryPieChart({ data }) {
           dataKey="value"
         >
           {chartData.map((entry) => (
-            <Cell key={entry.name} fill={CATEGORY_COLORS_MAP[entry.name] || '#a855f7'} strokeWidth={0} />
+            <Cell key={entry.name} fill={CATEGORY_COLORS_MAP[entry.name] || '#B9A99C'} strokeWidth={0} />
           ))}
         </Pie>
         <Tooltip
@@ -64,7 +64,7 @@ export function CategoryPieChart({ data }) {
         <Legend
           iconType="circle"
           iconSize={8}
-          formatter={(val) => <span style={{ color: '#94a3b8', fontSize: '12px' }}>{val}</span>}
+          formatter={(val) => <span style={{ color: '#8A7D74', fontSize: '12px' }}>{val}</span>}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -82,15 +82,15 @@ export function MonthlyBarChart({ data }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,36,34,0.06)" vertical={false} />
         <XAxis
           dataKey="name"
-          tick={{ fill: '#64748b', fontSize: 11 }}
+          tick={{ fill: '#8A7D74', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#64748b', fontSize: 11 }}
+          tick={{ fill: '#8A7D74', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
@@ -98,13 +98,13 @@ export function MonthlyBarChart({ data }) {
         <Tooltip
           contentStyle={tooltipStyle}
           formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Spent']}
-          cursor={{ fill: 'rgba(139,92,246,0.1)' }}
+          cursor={{ fill: 'rgba(238,108,77,0.08)' }}
         />
         <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
           {chartData.map((entry, i) => (
             <Cell
               key={i}
-              fill={i === new Date().getMonth() ? '#7c3aed' : '#4c1d95'}
+              fill={i === new Date().getMonth() ? '#EE6C4D' : '#F6D4C8'}
             />
           ))}
         </Bar>
@@ -130,21 +130,21 @@ export function SpendingAreaChart({ expenses }) {
     <ResponsiveContainer width="100%" height={280}>
       <AreaChart data={sorted} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
         <defs>
-          <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
-            <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+          <linearGradient id="accentGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#EE6C4D" stopOpacity={0.35} />
+            <stop offset="95%" stopColor="#EE6C4D" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,36,34,0.06)" vertical={false} />
         <XAxis
           dataKey="date"
-          tick={{ fill: '#64748b', fontSize: 10 }}
+          tick={{ fill: '#8A7D74', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fill: '#64748b', fontSize: 11 }}
+          tick={{ fill: '#8A7D74', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
@@ -156,9 +156,9 @@ export function SpendingAreaChart({ expenses }) {
         <Area
           type="monotone"
           dataKey="amount"
-          stroke="#7c3aed"
+          stroke="#EE6C4D"
           strokeWidth={2}
-          fill="url(#purpleGrad)"
+          fill="url(#accentGrad)"
           dot={false}
         />
       </AreaChart>
@@ -166,9 +166,64 @@ export function SpendingAreaChart({ expenses }) {
   )
 }
 
+const HEATMAP_LEVELS = ['#F2EAE0', '#F8D9CD', '#F3AD97', '#EC7E5F', '#DA5234']
+const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+export function DailyHeatmap({ expenses, year, month }) {
+  const dailyTotals = {}
+  ;(expenses || []).forEach((e) => {
+    const day = new Date(e.date).getDate()
+    dailyTotals[day] = (dailyTotals[day] || 0) + e.amount
+  })
+
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const firstWeekday = new Date(year, month - 1, 1).getDay()
+  const max = Math.max(1, ...Object.values(dailyTotals))
+
+  const levelOf = (amt) => {
+    if (!amt) return 0
+    const ratio = amt / max
+    if (ratio > 0.75) return 4
+    if (ratio > 0.5) return 3
+    if (ratio > 0.25) return 2
+    return 1
+  }
+
+  const cells = Array(firstWeekday).fill(null).concat(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  )
+
+  return (
+    <div>
+      <div className="grid grid-cols-7 gap-1.5 mb-2">
+        {WEEKDAY_LABELS.map((d, i) => (
+          <div key={i} className="text-center text-[11px] text-ink-faint font-semibold">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1.5">
+        {cells.map((day, i) => (
+          <div
+            key={i}
+            title={day ? `Day ${day}: ₹${Math.round(dailyTotals[day] || 0).toLocaleString('en-IN')}` : undefined}
+            className="aspect-square rounded-md"
+            style={{ background: day ? HEATMAP_LEVELS[levelOf(dailyTotals[day])] : 'transparent' }}
+          />
+        ))}
+      </div>
+      <div className="flex items-center justify-end gap-1.5 mt-3 text-[11px] text-ink-faint font-semibold">
+        Less
+        {HEATMAP_LEVELS.map((c, i) => (
+          <div key={i} className="w-3 h-3 rounded" style={{ background: c }} />
+        ))}
+        More
+      </div>
+    </div>
+  )
+}
+
 function EmptyChart({ message }) {
   return (
-    <div className="flex items-center justify-center h-[280px] text-slate-500 text-sm">
+    <div className="flex items-center justify-center h-[280px] text-ink-faint text-sm">
       {message}
     </div>
   )

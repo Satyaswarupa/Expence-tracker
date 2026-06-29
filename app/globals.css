@@ -1,20 +1,35 @@
 @import "tailwindcss";
 
-/* ---- Midnight Purple Theme ---- */
+/* ---- MoneyJot Warm Cream Theme ---- */
 :root {
-  --bg-base: #0a0618;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-card-hover: rgba(255, 255, 255, 0.05);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --purple-primary: #7c3aed;
-  --purple-light: #a78bfa;
-  --indigo: #6366f1;
+  --cream: #FBF5EE;
+  --card: #FFFFFF;
+  --line: #EFE6DC;
+  --line-soft: #F4ECE3;
+  --ink: #2B2422;
+  --ink-soft: #5C5048;
+  --ink-muted: #8A7D74;
+  --ink-faint: #B9A99C;
+  --accent: #EE6C4D;
+  --success: #2E9E83;
+  --danger: #D9553A;
 }
 
 @theme inline {
-  --color-background: var(--bg-base);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--cream);
+  --color-cream: var(--cream);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-bricolage);
 }
 
 * {
@@ -26,14 +41,14 @@ html {
 }
 
 body {
-  background-color: var(--bg-base);
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(99, 47, 188, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 60%);
-  background-attachment: fixed;
-  color: #e2e8f0;
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background-color: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
   min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-bricolage), var(--font-jakarta), system-ui, sans-serif;
 }
 
 /* Scrollbar */
@@ -45,11 +60,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.3);
+  background: rgba(238, 108, 77, 0.3);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.5);
+  background: rgba(238, 108, 77, 0.5);
 }
 
 /* Hide scrollbar utility */
@@ -59,49 +74,47 @@ body {
 /* Visible scrollbar for the mobile popup box */
 .popup-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.6) rgba(255, 255, 255, 0.04);
+  scrollbar-color: rgba(238, 108, 77, 0.5) rgba(43, 36, 34, 0.04);
 }
 .popup-scroll::-webkit-scrollbar {
   width: 8px;
 }
 .popup-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(43, 36, 34, 0.04);
   border-radius: 8px;
 }
 .popup-scroll::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.6);
+  background: rgba(238, 108, 77, 0.5);
   border-radius: 8px;
 }
 .popup-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.85);
+  background: rgba(238, 108, 77, 0.75);
 }
 
 /* ---- Reusable component classes ---- */
 
 .glass-card {
-  background: rgba(15, 10, 30, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--card);
+  border: 1px solid var(--line);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent);
+  font-family: var(--font-bricolage), var(--font-jakarta), system-ui, sans-serif;
+  font-weight: 700;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+  background: var(--accent);
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
-  padding: 0.5rem 1.25rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 8px 18px rgba(238, 108, 77, 0.3);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -109,8 +122,8 @@ body {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%);
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+  filter: brightness(0.94);
+  box-shadow: 0 8px 20px rgba(238, 108, 77, 0.42);
   transform: translateY(-1px);
 }
 
@@ -124,12 +137,12 @@ body {
 }
 
 .btn-ghost {
-  color: #94a3b8;
-  font-weight: 500;
+  color: var(--ink-soft);
+  font-weight: 600;
   font-size: 0.875rem;
   padding: 0.5rem 1.25rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   cursor: pointer;
   transition: all 0.2s ease;
   background: transparent;
@@ -140,39 +153,39 @@ body {
 }
 
 .btn-ghost:hover {
-  color: white;
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  border-color: var(--accent);
+  background: rgba(238, 108, 77, 0.06);
 }
 
 .input-field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--cream);
+  border: 1px solid var(--line);
   border-radius: 0.75rem;
-  color: #e2e8f0;
+  color: var(--ink);
   font-size: 0.875rem;
   padding: 0.625rem 0.875rem;
   transition: all 0.2s ease;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .input-field::placeholder {
-  color: #475569;
+  color: var(--ink-faint);
 }
 
 .input-field:focus {
-  border-color: rgba(124, 58, 237, 0.5);
-  background: rgba(124, 58, 237, 0.05);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  border-color: var(--accent);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(238, 108, 77, 0.12);
 }
 
 .input-field option {
-  background-color: #1e1333;
-  color: #e2e8f0;
+  background-color: white;
+  color: var(--ink);
 }
 
 /* Date & time input picker icon */

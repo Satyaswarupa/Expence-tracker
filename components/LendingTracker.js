@@ -15,7 +15,7 @@ const blankForm = () => ({
   person: '', amount: '', expectedReturnDate: todayStr(), expectedReturnTime: nowTimeStr(), paymentMethod: 'Cash', note: '',
 })
 
-export default function LendingTracker() {
+export default function LendingTracker({ onTotalChange } = {}) {
   const [lendings, setLendings] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -82,25 +82,27 @@ export default function LendingTracker() {
 
   const total = lendings.reduce((sum, l) => sum + l.amount, 0)
 
+  useEffect(() => { onTotalChange?.(total) }, [total])
+
   return (
-    <div className="glass-card rounded-2xl border border-white/5 p-5">
+    <div className="glass-card rounded-2xl p-5">
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-sm font-semibold text-white">Money Lent Out</h2>
+        <h2 className="text-sm font-semibold text-ink">Money Lent Out</h2>
         <button
           onClick={() => { setShowForm((s) => !s); setError('') }}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+          className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-cream transition-all"
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         </button>
       </div>
       {!loading && lendings.length > 0 && (
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-ink-faint mb-4">
           {fmtCurrency(total)} owed back to you across {lendings.length} {lendings.length === 1 ? 'person' : 'people'}
         </p>
       )}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="space-y-3 mb-4 p-3 rounded-xl border border-white/5 bg-white/3">
+        <form onSubmit={handleAdd} className="space-y-3 mb-4 p-3 rounded-xl border border-line bg-cream">
           <div className="grid grid-cols-2 gap-2">
             <input
               value={form.person}
@@ -120,7 +122,7 @@ export default function LendingTracker() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="min-w-0">
-              <label className="block text-[11px] text-slate-500 mb-1">Return date (optional)</label>
+              <label className="block text-[11px] text-ink-faint mb-1">Return date (optional)</label>
               <input
                 type="date"
                 value={form.expectedReturnDate}
@@ -129,7 +131,7 @@ export default function LendingTracker() {
               />
             </div>
             <div className="min-w-0">
-              <label className="block text-[11px] text-slate-500 mb-1">Return time (optional)</label>
+              <label className="block text-[11px] text-ink-faint mb-1">Return time (optional)</label>
               <input
                 type="time"
                 value={form.expectedReturnTime}
@@ -146,8 +148,8 @@ export default function LendingTracker() {
                 onClick={() => setForm((p) => ({ ...p, paymentMethod: pm }))}
                 className={`flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                   form.paymentMethod === pm
-                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
-                    : 'border-white/5 text-slate-500 hover:border-purple-500/30 hover:text-slate-300 bg-white/3'
+                    ? 'bg-accent/15 border-accent/50 text-accent'
+                    : 'border-line text-ink-faint hover:border-accent/30 hover:text-ink-soft bg-white'
                 }`}
               >
                 <span className="text-base">{PAYMENT_METHOD_EMOJIS[pm]}</span>
@@ -161,7 +163,7 @@ export default function LendingTracker() {
             placeholder="Note (optional)"
             className="input-field"
           />
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className="text-red-500 text-xs">{error}</p>}
           <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2">
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -175,38 +177,40 @@ export default function LendingTracker() {
 
       {loading ? (
         <div className="flex items-center justify-center h-24">
-          <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+          <Loader2 className="w-5 h-5 text-accent animate-spin" />
         </div>
       ) : lendings.length ? (
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-3">
           {lendings.map((l) => (
-            <div key={l._id} className="flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-white/3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                🤝
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-white text-sm truncate">{l.person}</div>
-                <div className="text-xs text-slate-500 truncate">
-                  Lent {fmtDate(l.dateGiven)} · {(l.paymentMethod || 'Cash') === 'UPI' ? '📱' : '💵'} {l.paymentMethod || 'Cash'}
-                  {l.expectedReturnDate && ` · back by ${fmtReturnBy(l.expectedReturnDate)}`}
-                  {l.note && ` · ${l.note}`}
+            <div key={l._id} className="min-w-0 flex flex-col gap-2 p-3 rounded-xl border border-line bg-cream overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-[#F4A93B]/10 border border-[#F4A93B]/25 text-[#F4A93B]">
+                  🤝
                 </div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="font-bold text-white tabular-nums">{fmtCurrency(l.amount)}</span>
                 <button
                   onClick={() => handleReturned(l._id)}
                   title="Mark as returned"
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                  className="p-1.5 rounded-lg text-ink-faint hover:text-success hover:bg-success/10 transition-all flex-shrink-0"
                 >
                   <Check className="w-3.5 h-3.5" />
                 </button>
               </div>
+              <div className="min-w-0">
+                <div className="font-medium text-ink text-sm truncate">{l.person}</div>
+                <div className="text-xs text-ink-faint truncate">
+                  Lent {fmtDate(l.dateGiven)} · {(l.paymentMethod || 'Cash') === 'UPI' ? '📱' : '💵'}
+                </div>
+                {l.expectedReturnDate && (
+                  <div className="text-xs text-ink-faint truncate">Back by {fmtReturnBy(l.expectedReturnDate)}</div>
+                )}
+                {l.note && <div className="text-xs text-ink-faint truncate">{l.note}</div>}
+              </div>
+              <div className="font-display font-bold text-ink tabular-nums truncate">{fmtCurrency(l.amount)}</div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center text-slate-500 text-sm py-6">
+        <div className="text-center text-ink-faint text-sm py-6">
           No pending lendings — all settled up!
         </div>
       )}
