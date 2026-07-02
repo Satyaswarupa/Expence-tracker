@@ -69,10 +69,10 @@ export default function DashboardPage() {
     if (!authLoading && !user) router.push('/login')
   }, [user, authLoading])
 
-  const fetchStats = useCallback(async () => {
-    const res = await fetch('/api/expenses/stats')
+  const fetchStats = useCallback(async (m = selectedMonth) => {
+    const res = await fetch(`/api/expenses/stats?month=${m.month}&year=${m.year}`)
     if (res.ok) setStats(await res.json())
-  }, [])
+  }, [selectedMonth])
 
   // Real money & people totals (same aggregation already used on the People page)
   useEffect(() => {
@@ -93,13 +93,13 @@ export default function DashboardPage() {
       .catch(() => {})
   }, [user])
 
-  const fetchExpenses = useCallback(async (p) => {
-    const res = await fetch(`/api/expenses?limit=${PAGE_SIZE}&page=${p}`)
+  const fetchExpenses = useCallback(async (p, m = selectedMonth) => {
+    const res = await fetch(`/api/expenses?limit=${PAGE_SIZE}&page=${p}&month=${m.month}&year=${m.year}`)
     if (!res.ok) return
     const data = await res.json()
     setExpenses(data.expenses || [])
     setTotalPages(data.totalPages || 1)
-  }, [])
+  }, [selectedMonth])
 
   const fetchData = useCallback(async (p = 1) => {
     try {
@@ -111,7 +111,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) fetchData(1)
-  }, [user, fetchData])
+  }, [user, selectedMonth])
 
   const goToPage = async (p) => {
     setPageLoading(true)
@@ -124,8 +124,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!socket) return
     const handleCreated = (expense) => {
-      // Only prepend on page 1 so list stays consistent
-      if (page === 1) {
+      // Only prepend on page 1, and only when the new expense actually falls in the selected month
+      const d = new Date(expense.date)
+      const belongsToSelectedMonth = d.getMonth() + 1 === selectedMonth.month && d.getFullYear() === selectedMonth.year
+      if (page === 1 && belongsToSelectedMonth) {
         setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
       }
       fetchStats()
@@ -147,7 +149,7 @@ export default function DashboardPage() {
       socket.off('expense:updated', handleUpdated)
       socket.off('expense:deleted', handleDeleted)
     }
-  }, [socket, page, fetchStats, fetchExpenses])
+  }, [socket, page, fetchStats, fetchExpenses, selectedMonth])
 
   if (authLoading || !user) {
     return (
@@ -186,7 +188,8 @@ export default function DashboardPage() {
   const openAddForm = () => { setShowForm(true); setEditExpense(null) }
 
   const topCategories = (stats?.byCategory || []).slice(0, 3)
-  const catTotal = stats?.allTime?.total || 0
+  // byCategory is scoped to selectedMonth, so the % bars must sum against it too (not the all-time total)
+  const catTotal = (stats?.byCategory || []).reduce((sum, cat) => sum + cat.total, 0)
 
   // Month selector — derives from monthlyTrend already returned by /api/expenses/stats, no new fetch
   const monthOptions = Array.from({ length: now.getMonth() + 1 }, (_, i) => ({ month: i + 1, year: now.getFullYear() }))
@@ -214,6 +217,7 @@ export default function DashboardPage() {
               value={`${selectedMonth.month}-${selectedMonth.year}`}
               onChange={(e) => {
                 const [m, y] = e.target.value.split('-').map(Number)
+                setPage(1)
                 setSelectedMonth({ month: m, year: y })
               }}
               className="appearance-none bg-white border border-line rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-ink-soft cursor-pointer"
@@ -262,7 +266,10 @@ export default function DashboardPage() {
       {/* Mobile by-category card */}
       <div className="lg:hidden mb-6 glass-card rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-bold text-sm text-ink">By category</h2>
+          <div>
+            <h2 className="font-display font-bold text-sm text-ink">By category</h2>
+            <p className="text-[11px] text-ink-faint">{selectedLabel}</p>
+          </div>
           <button onClick={() => router.push('/analytics')} className="text-xs text-accent font-bold">See all</button>
         </div>
         {loading ? (
@@ -334,7 +341,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <div className="glass-card rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-ink mb-1">Spending Over Time</h2>
-            <p className="text-xs text-ink-faint mb-4">Last 14 days</p>
+            <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
             {loading ? (
               <div className="flex items-center justify-center h-[280px]">
                 <Loader2 className="w-6 h-6 text-accent animate-spin" />
@@ -356,7 +363,8 @@ export default function DashboardPage() {
             />
           ) : (
             <div className="glass-card rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-ink mb-4">Top Categories</h2>
+              <h2 className="text-sm font-semibold text-ink">Top Categories</h2>
+              <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
               {loading ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="w-5 h-5 text-accent animate-spin" />
@@ -364,8 +372,8 @@ export default function DashboardPage() {
               ) : stats?.byCategory?.length ? (
                 <div className="space-y-3">
                   {stats.byCategory.slice(0, 5).map((cat) => {
-                    const pct = stats.allTime?.total
-                      ? Math.round((cat.total / stats.allTime.total) * 100)
+                    const pct = catTotal
+                      ? Math.round((cat.total / catTotal) * 100)
                       : 0
                     return (
                       <div key={cat._id}>
@@ -399,10 +407,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent expenses */}
+      {/* Recent expenses — scoped to the selected month */}
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-ink">Recent Transactions</h2>
+          <div>
+            <h2 className="text-sm font-semibold text-ink">Transactions</h2>
+            <p className="text-xs text-ink-faint">{selectedLabel}</p>
+          </div>
           <button onClick={() => router.push('/expenses')} className="text-xs text-accent hover:opacity-80 transition-opacity">
             View all →
           </button>
