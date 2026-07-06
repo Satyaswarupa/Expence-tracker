@@ -25,10 +25,10 @@ export const CATEGORY_COLORS_MAP = {
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const tooltipStyle = {
-  backgroundColor: '#ffffff',
-  border: '1px solid #EFE6DC',
+  backgroundColor: '#1D1E28',
+  border: '1px solid #2E2F3D',
   borderRadius: '12px',
-  color: '#2B2422',
+  color: '#F3F3F6',
   fontSize: '12px',
 }
 
@@ -64,7 +64,7 @@ export function CategoryPieChart({ data }) {
         <Legend
           iconType="circle"
           iconSize={8}
-          formatter={(val) => <span style={{ color: '#8A7D74', fontSize: '12px' }}>{val}</span>}
+          formatter={(val) => <span style={{ color: '#8D8E9C', fontSize: '12px' }}>{val}</span>}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -82,15 +82,15 @@ export function MonthlyBarChart({ data }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,36,34,0.06)" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
         <XAxis
           dataKey="name"
-          tick={{ fill: '#8A7D74', fontSize: 11 }}
+          tick={{ fill: '#8D8E9C', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#8A7D74', fontSize: 11 }}
+          tick={{ fill: '#8D8E9C', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
@@ -98,13 +98,13 @@ export function MonthlyBarChart({ data }) {
         <Tooltip
           contentStyle={tooltipStyle}
           formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Spent']}
-          cursor={{ fill: 'rgba(238,108,77,0.08)' }}
+          cursor={{ fill: 'rgba(242,103,63,0.12)' }}
         />
         <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
           {chartData.map((entry, i) => (
             <Cell
               key={i}
-              fill={i === new Date().getMonth() ? '#EE6C4D' : '#F6D4C8'}
+              fill={i === new Date().getMonth() ? '#F2673F' : 'rgba(242,103,63,0.22)'}
             />
           ))}
         </Bar>
@@ -131,20 +131,20 @@ export function SpendingAreaChart({ expenses }) {
       <AreaChart data={sorted} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
         <defs>
           <linearGradient id="accentGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#EE6C4D" stopOpacity={0.35} />
-            <stop offset="95%" stopColor="#EE6C4D" stopOpacity={0} />
+            <stop offset="5%" stopColor="#F2673F" stopOpacity={0.45} />
+            <stop offset="95%" stopColor="#F2673F" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,36,34,0.06)" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
         <XAxis
           dataKey="date"
-          tick={{ fill: '#8A7D74', fontSize: 10 }}
+          tick={{ fill: '#8D8E9C', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fill: '#8A7D74', fontSize: 11 }}
+          tick={{ fill: '#8D8E9C', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
@@ -156,7 +156,7 @@ export function SpendingAreaChart({ expenses }) {
         <Area
           type="monotone"
           dataKey="amount"
-          stroke="#EE6C4D"
+          stroke="#F2673F"
           strokeWidth={2}
           fill="url(#accentGrad)"
           dot={false}
@@ -166,7 +166,7 @@ export function SpendingAreaChart({ expenses }) {
   )
 }
 
-const HEATMAP_LEVELS = ['#F2EAE0', '#F8D9CD', '#F3AD97', '#EC7E5F', '#DA5234']
+const HEATMAP_LEVELS = ['#1B1C24', '#3B2A22', '#6B3A26', '#B14F2C', '#F2673F']
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
 export function DailyHeatmap({ expenses, year, month }) {

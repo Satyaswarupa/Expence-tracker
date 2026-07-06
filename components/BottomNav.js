@@ -32,7 +32,7 @@ export default function BottomNav({ onAdd }) {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-line flex items-end justify-around px-4 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-card border-t border-line flex items-end justify-around px-4 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]">
       {leftItems.map((item) => (
         <NavLink key={item.href} {...item} active={pathname === item.href} />
       ))}

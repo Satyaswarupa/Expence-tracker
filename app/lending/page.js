@@ -46,11 +46,11 @@ export default function LendingPage() {
       {/* Mobile-only summary + filter */}
       <div className="lg:hidden mb-5 flex flex-col gap-4">
         <div className="flex gap-3">
-          <div className="flex-1 min-w-0 glass-card rounded-2xl p-4">
+          <div className="flex-1 min-w-0 glass-card card-top-red rounded-2xl p-4">
             <div className="text-xs text-ink-muted font-medium truncate">You owe</div>
             <div className="font-display text-xl font-bold text-danger mt-0.5 truncate">{fmtCurrency(youOwe)}</div>
           </div>
-          <div className="flex-1 min-w-0 glass-card rounded-2xl p-4">
+          <div className="flex-1 min-w-0 glass-card card-top-green rounded-2xl p-4">
             <div className="text-xs text-ink-muted font-medium truncate">You&apos;re owed</div>
             <div className="font-display text-xl font-bold text-success mt-0.5 truncate">{fmtCurrency(owedToYou)}</div>
           </div>
@@ -62,7 +62,7 @@ export default function LendingPage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex-1 min-w-0 text-center rounded-lg py-2 text-sm font-semibold transition-all truncate px-1 ${
-                tab === t.key ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+                tab === t.key ? 'bg-card text-ink shadow-sm' : 'text-ink-muted'
               }`}
             >
               {t.label}

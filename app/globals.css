@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
-/* ---- MoneyJot Warm Cream Theme ---- */
+/* ---- MoneyJot Midnight Theme ---- */
 :root {
-  --cream: #FBF5EE;
-  --card: #FFFFFF;
-  --line: #EFE6DC;
-  --line-soft: #F4ECE3;
-  --ink: #2B2422;
-  --ink-soft: #5C5048;
-  --ink-muted: #8A7D74;
-  --ink-faint: #B9A99C;
-  --accent: #EE6C4D;
-  --success: #2E9E83;
-  --danger: #D9553A;
+  --cream: #0B0C11;
+  --card: #15161D;
+  --line: #262735;
+  --line-soft: #1E1F29;
+  --ink: #F3F3F6;
+  --ink-soft: #C7C8D3;
+  --ink-muted: #8D8E9C;
+  --ink-faint: #5B5C6B;
+  --accent: #F2673F;
+  --success: #34D399;
+  --danger: #FF5C5C;
+  --accent-yellow: #F5C344;
+  --accent-pink: #EC4899;
+  --accent-purple: #8B5CF6;
 }
 
 @theme inline {
@@ -28,8 +31,15 @@
   --color-accent: var(--accent);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-purple: var(--accent-purple);
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-bricolage);
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
 }
 
 * {
@@ -97,6 +107,12 @@ body {
   background: var(--card);
   border: 1px solid var(--line);
 }
+
+.card-top-red { border-top: 3px solid var(--danger); }
+.card-top-green { border-top: 3px solid var(--success); }
+.card-top-yellow { border-top: 3px solid var(--accent-yellow); }
+.card-top-pink { border-top: 3px solid var(--accent-pink); }
+.card-top-purple { border-top: 3px solid var(--accent-purple); }
 
 .gradient-text {
   color: var(--accent);
@@ -170,7 +186,7 @@ body {
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 .input-field::placeholder {
@@ -179,13 +195,17 @@ body {
 
 .input-field:focus {
   border-color: var(--accent);
-  background: white;
-  box-shadow: 0 0 0 3px rgba(238, 108, 77, 0.12);
+  background: var(--card);
+  box-shadow: 0 0 0 3px rgba(238, 108, 77, 0.16);
 }
 
 .input-field option {
-  background-color: white;
+  background-color: var(--card);
   color: var(--ink);
+}
+
+.input-field.search-input {
+  padding-left: 2.5rem;
 }
 
 /* Date & time input picker icon */

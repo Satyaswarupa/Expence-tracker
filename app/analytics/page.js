@@ -84,10 +84,10 @@ export default function AnalyticsPage() {
 
       {/* Summary cards */}
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <div className="glass-card rounded-2xl p-5">
+        <div className="glass-card card-top-red rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-accent" />
+            <div className="w-9 h-9 rounded-xl bg-danger/15 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-danger" />
             </div>
             <span className="text-ink-muted text-sm">All Time Total</span>
           </div>
@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
           <p className="text-xs text-ink-faint mt-1">{stats?.allTime?.count || 0} transactions</p>
         </div>
 
-        <div className="glass-card rounded-2xl p-5">
+        <div className="glass-card card-top-green rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl bg-success/15 flex items-center justify-center">
               {monthTrend !== null && monthTrend >= 0
@@ -113,9 +113,9 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        <div className="glass-card rounded-2xl p-5">
+        <div className="glass-card card-top-yellow rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-[#F4A93B]/15 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-accent-yellow/15 flex items-center justify-center">
               <span className="text-base">{topCategory ? CATEGORY_EMOJIS[topCategory._id] : '📊'}</span>
             </div>
             <span className="text-ink-muted text-sm">Top Category</span>

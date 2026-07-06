@@ -135,7 +135,7 @@ export default function ExpensesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search expenses..."
-              className="input-field pl-10 w-full"
+              className="input-field search-input w-full"
             />
           </div>
           <button
@@ -194,7 +194,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Category quick filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-5 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -208,6 +208,27 @@ export default function ExpensesPage() {
             {cat}
           </button>
         ))}
+      </div>
+
+      {/* Month quick filter pills */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-5 scrollbar-hide">
+        {MONTHS.map((m, i) => {
+          const value = i === 0 ? '' : String(i)
+          const isSelected = filters.month === value
+          return (
+            <button
+              key={m}
+              onClick={() => setFilters((p) => ({ ...p, month: value }))}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                isSelected
+                  ? 'bg-accent/15 border-accent/40 text-accent'
+                  : 'border-line text-ink-faint hover:text-ink hover:border-accent/25'
+              }`}
+            >
+              {m}
+            </button>
+          )
+        })}
       </div>
 
       {/* Expenses list */}

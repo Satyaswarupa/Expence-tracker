@@ -105,7 +105,7 @@ export default function ExpenseCard({ expense, onDelete, onEdit }) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="p-1.5 rounded-lg text-ink-faint hover:text-red-500 hover:bg-red-50 transition-all"
+              className="p-1.5 rounded-lg text-ink-faint hover:text-danger hover:bg-danger/10 transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

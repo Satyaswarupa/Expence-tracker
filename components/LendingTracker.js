@@ -149,7 +149,7 @@ export default function LendingTracker({ onTotalChange } = {}) {
                 className={`flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                   form.paymentMethod === pm
                     ? 'bg-accent/15 border-accent/50 text-accent'
-                    : 'border-line text-ink-faint hover:border-accent/30 hover:text-ink-soft bg-white'
+                    : 'border-line text-ink-faint hover:border-accent/30 hover:text-ink-soft bg-card'
                 }`}
               >
                 <span className="text-base">{PAYMENT_METHOD_EMOJIS[pm]}</span>
@@ -163,7 +163,7 @@ export default function LendingTracker({ onTotalChange } = {}) {
             placeholder="Note (optional)"
             className="input-field"
           />
-          {error && <p className="text-red-500 text-xs">{error}</p>}
+          {error && <p className="text-danger text-xs">{error}</p>}
           <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2">
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

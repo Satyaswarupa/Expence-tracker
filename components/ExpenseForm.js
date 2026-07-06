@@ -68,7 +68,7 @@ function CalculatorPopup({ initialValue, onApply, onClose }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-xs bg-white rounded-2xl border border-line shadow-xl p-4">
+      <div className="relative w-full max-w-xs bg-card rounded-2xl border border-line shadow-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display text-sm font-bold text-ink">Calculator</h3>
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-cream transition-all">
@@ -81,7 +81,7 @@ function CalculatorPopup({ initialValue, onApply, onClose }) {
         </div>
 
         <div className="grid grid-cols-4 gap-2">
-          <button type="button" onClick={clearAll} className={`${buttonClass} bg-red-50 text-red-500`}>C</button>
+          <button type="button" onClick={clearAll} className={`${buttonClass} bg-danger/10 text-danger`}>C</button>
           <button type="button" onClick={backspace} className={`${buttonClass} bg-cream text-ink-soft`}>
             <Delete className="w-5 h-5" />
           </button>
@@ -181,7 +181,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
 
   return (
     <div className="glass-card rounded-2xl border-accent/20">
-      <div className="sticky md:static top-0 z-10 flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 bg-white/95 backdrop-blur-md border-b border-line-soft rounded-t-2xl">
+      <div className="sticky md:static top-0 z-10 flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 bg-card/95 backdrop-blur-md border-b border-line-soft rounded-t-2xl">
         <h2 className="font-display text-lg font-bold text-ink">
           {editData ? 'Edit Expense' : 'Add New Expense'}
         </h2>
@@ -356,7 +356,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
         </div>
 
         {error && (
-          <div className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <div className="text-danger text-sm bg-danger/10 border border-danger/25 rounded-lg px-3 py-2">
             {error}
           </div>
         )}

@@ -125,7 +125,7 @@ export default function LandingPage() {
                 { label: 'Transactions', val: '142', color: 'bg-[#F4A93B]' },
                 { label: 'Categories', val: '8', color: 'bg-[#E0719A]' },
               ].map((c) => (
-                <div key={c.label} className="rounded-xl bg-white border border-line p-3 min-w-0">
+                <div key={c.label} className="rounded-xl bg-card border border-line p-3 min-w-0">
                   <div className={`w-7 h-7 rounded-lg ${c.color} mb-2`} />
                   <div className="font-display text-ink font-bold text-lg truncate">{c.val}</div>
                   <div className="text-ink-faint text-xs">{c.label}</div>
@@ -133,10 +133,10 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-              <div className="sm:col-span-3 rounded-xl bg-white border border-line h-36 flex items-center justify-center text-ink-faint text-sm">
+              <div className="sm:col-span-3 rounded-xl bg-card border border-line h-36 flex items-center justify-center text-ink-faint text-sm">
                 📊 Monthly Trend Chart
               </div>
-              <div className="sm:col-span-2 rounded-xl bg-white border border-line h-36 flex items-center justify-center text-ink-faint text-sm">
+              <div className="sm:col-span-2 rounded-xl bg-card border border-line h-36 flex items-center justify-center text-ink-faint text-sm">
                 🥧 Category Pie
               </div>
             </div>

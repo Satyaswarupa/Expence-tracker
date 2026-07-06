@@ -81,14 +81,14 @@ export default function Navbar() {
                 <span className="hidden md:block text-sm text-ink-soft max-w-[120px] truncate">{user.name}</span>
               </button>
               {avatarOpen && (
-                <div className="absolute right-0 top-10 w-48 bg-white border border-line rounded-xl shadow-xl py-1 z-50">
+                <div className="absolute right-0 top-10 w-48 bg-card border border-line rounded-xl shadow-xl py-1 z-50">
                   <div className="px-3 py-2 border-b border-line-soft">
                     <p className="text-sm font-semibold text-ink truncate">{user.name}</p>
                     <p className="text-xs text-ink-faint truncate">{user.email}</p>
                   </div>
                   <button
                     onClick={() => { setAvatarOpen(false); logout() }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     Logout

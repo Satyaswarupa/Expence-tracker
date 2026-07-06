@@ -28,7 +28,7 @@ export default function Sidebar() {
     .slice(0, 2)
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 hidden lg:flex flex-col z-40 overflow-hidden bg-white border-r border-line">
+    <aside className="fixed left-0 top-0 h-screen w-64 hidden lg:flex flex-col z-40 overflow-hidden bg-card border-r border-line">
       <div className="flex flex-col h-full">
 
         {/* Logo */}
@@ -82,11 +82,11 @@ export default function Sidebar() {
         <div className="px-5 py-3">
           <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border w-fit transition-all ${
             connected
-              ? 'text-emerald-600 border-emerald-200 bg-emerald-50'
+              ? 'text-success border-success/25 bg-success/10'
               : 'text-ink-faint border-line bg-cream'
           }`}>
             <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-              connected ? 'bg-emerald-500 animate-pulse' : 'bg-ink-faint'
+              connected ? 'bg-success animate-pulse' : 'bg-ink-faint'
             }`} />
             <span className="font-medium">{connected ? 'Live sync on' : 'Offline mode'}</span>
           </div>
@@ -111,7 +111,7 @@ export default function Sidebar() {
           {/* Logout */}
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-muted hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all duration-200 group"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-muted hover:text-danger hover:bg-danger/10 border border-transparent hover:border-danger/25 transition-all duration-200 group"
           >
             <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
             Sign out

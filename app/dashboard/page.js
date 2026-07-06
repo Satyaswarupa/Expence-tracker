@@ -35,7 +35,7 @@ function MobileSheet({ open, onClose, children }) {
         className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${animOut ? 'opacity-0' : 'opacity-100'}`}
         onClick={onClose}
       />
-      <div className={`absolute bottom-0 left-0 right-0 bg-white border-t border-line rounded-t-2xl ${animOut ? 'sheet-exit' : 'sheet-enter'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-card border-t border-line rounded-t-2xl ${animOut ? 'sheet-exit' : 'sheet-enter'}`}>
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-black/10" />
         </div>
@@ -220,7 +220,7 @@ export default function DashboardPage() {
                 setPage(1)
                 setSelectedMonth({ month: m, year: y })
               }}
-              className="appearance-none bg-white border border-line rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-ink-soft cursor-pointer"
+              className="appearance-none bg-card border border-line rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-ink-soft cursor-pointer"
             >
               {monthOptions.map((o) => (
                 <option key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Mobile hero card — real data only (no budget field exists in this app) */}
-      <div className="lg:hidden mb-4 rounded-[22px] bg-accent text-white p-5 relative overflow-hidden shadow-lg shadow-accent/25">
+      <div className="lg:hidden mb-4 rounded-2xl bg-accent text-white p-5 relative overflow-hidden shadow-lg shadow-accent/25">
         <div className="absolute w-40 h-40 rounded-full bg-white/10 -right-10 -top-14 pointer-events-none" />
         <div className="text-sm text-white/85 relative">Spent {isCurrentMonth ? 'this month' : `in ${selectedLabel}`}</div>
         <div className="font-display text-4xl font-bold mt-0.5 relative">
@@ -253,18 +253,18 @@ export default function DashboardPage() {
 
       {/* Mobile money & people row — real totals from /api/lendings + /api/pending-payments */}
       <div className="lg:hidden mb-4 flex gap-3">
-        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card rounded-2xl p-4">
+        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card card-top-red rounded-2xl p-4">
           <div className="text-xs text-ink-muted font-medium truncate">You owe</div>
           <div className="font-display text-xl font-bold text-danger mt-0.5 truncate">{fmtCurrency(youOwe)}</div>
         </button>
-        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card rounded-2xl p-4">
+        <button onClick={() => router.push('/lending')} className="flex-1 min-w-0 text-left glass-card card-top-green rounded-2xl p-4">
           <div className="text-xs text-ink-muted font-medium truncate">Owed to you</div>
           <div className="font-display text-xl font-bold text-success mt-0.5 truncate">{fmtCurrency(owedToYou)}</div>
         </button>
       </div>
 
       {/* Mobile by-category card */}
-      <div className="lg:hidden mb-6 glass-card rounded-2xl p-4">
+      <div className="lg:hidden mb-6 glass-card card-top-purple rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="font-display font-bold text-sm text-ink">By category</h2>
@@ -339,7 +339,7 @@ export default function DashboardPage() {
       <div className="hidden lg:grid lg:grid-cols-3 gap-6">
         {/* Chart */}
         <div className="lg:col-span-2">
-          <div className="glass-card rounded-2xl p-5">
+          <div className="glass-card card-top-red rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-ink mb-1">Spending Over Time</h2>
             <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
             {loading ? (
@@ -362,7 +362,7 @@ export default function DashboardPage() {
               onClose={() => { setShowForm(false); setEditExpense(null) }}
             />
           ) : (
-            <div className="glass-card rounded-2xl p-5">
+            <div className="glass-card card-top-purple rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-ink">Top Categories</h2>
               <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
               {loading ? (
