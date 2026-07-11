@@ -7,7 +7,8 @@ import { useSocket } from '@/context/SocketContext'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import BottomNav from '@/components/BottomNav'
-import { Search, Filter, Plus, X, Loader2, SlidersHorizontal } from 'lucide-react'
+import { SkeletonPage, SkeletonRows } from '@/components/Skeleton'
+import { Search, Filter, Plus, X, SlidersHorizontal } from 'lucide-react'
 
 const CATEGORIES = ['All', 'Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 
@@ -77,11 +78,7 @@ export default function ExpensesPage() {
   }, [socket, fetchExpenses])
 
   if (authLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
-      </div>
-    )
+    return <SkeletonPage />
   }
 
   const filtered = expenses.filter((e) =>
@@ -105,13 +102,15 @@ export default function ExpensesPage() {
             {filtered.length} transactions · Total: ₹{total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <button
-          onClick={openAddForm}
-          className="hidden lg:flex btn-primary items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Expense</span>
-        </button>
+        <div className="hidden lg:block">
+          <button
+            onClick={openAddForm}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Expense</span>
+          </button>
+        </div>
       </div>
 
       {/* Add/Edit form */}
@@ -233,9 +232,7 @@ export default function ExpensesPage() {
 
       {/* Expenses list */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-accent animate-spin" />
-        </div>
+        <SkeletonRows count={6} />
       ) : filtered.length ? (
         <div className="space-y-2">
           {filtered.map((expense) => (

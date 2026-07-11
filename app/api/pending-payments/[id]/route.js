@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import PendingPayment from '@/models/PendingPayment'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -28,6 +29,8 @@ export async function PUT(request, { params }) {
       { returnDocument: 'after', runValidators: true }
     )
 
+    revalidateTag(`pending-payments:${payload.userId}`)
+
     return Response.json({ payment })
   } catch (err) {
     return Response.json({ error: err.message || 'Internal server error' }, { status: 500 })
@@ -44,6 +47,8 @@ export async function DELETE(request, { params }) {
 
     const payment = await PendingPayment.findOneAndDelete({ _id: id, userId: payload.userId })
     if (!payment) return Response.json({ error: 'Payment not found' }, { status: 404 })
+
+    revalidateTag(`pending-payments:${payload.userId}`)
 
     return Response.json({ message: 'Payment removed' })
   } catch (err) {

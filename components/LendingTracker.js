@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, X, Check, Loader2 } from 'lucide-react'
+import { Plus, X, Check } from 'lucide-react'
 import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
+import { SkeletonGridCards } from '@/components/Skeleton'
 
 const PAYMENT_METHODS = ['Cash', 'UPI']
 const PAYMENT_METHOD_EMOJIS = { Cash: '💵', UPI: '📱' }
@@ -176,9 +177,7 @@ export default function LendingTracker({ onTotalChange } = {}) {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-24">
-          <Loader2 className="w-5 h-5 text-accent animate-spin" />
-        </div>
+        <SkeletonGridCards count={4} />
       ) : lendings.length ? (
         <div className="grid grid-cols-2 gap-3">
           {lendings.map((l) => (

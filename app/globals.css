@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
-/* ---- MoneyJot Midnight Theme ---- */
+/* ---- MoneyJot Neumorphic Theme ---- */
 :root {
-  --cream: #0B0C11;
-  --card: #15161D;
-  --line: #262735;
-  --line-soft: #1E1F29;
+  --page-bg: #1b1e29;
+  --cream: #14161e;
+  --card: #262a39;
+  --line: rgba(255, 255, 255, 0.06);
+  --line-soft: rgba(255, 255, 255, 0.04);
   --ink: #F3F3F6;
   --ink-soft: #C7C8D3;
   --ink-muted: #8D8E9C;
@@ -16,6 +17,14 @@
   --accent-yellow: #F5C344;
   --accent-pink: #EC4899;
   --accent-purple: #8B5CF6;
+
+  /* Dual light/dark shadows simulate a light source from the top-left, molded straight out of the background */
+  --shadow-raised: 10px 10px 22px rgba(0, 0, 0, 0.6), -8px -8px 20px rgba(255, 255, 255, 0.06);
+  --shadow-raised-sm: 6px 6px 13px rgba(0, 0, 0, 0.55), -5px -5px 12px rgba(255, 255, 255, 0.05);
+  --shadow-inset: inset 5px 5px 11px rgba(0, 0, 0, 0.6), inset -5px -5px 11px rgba(255, 255, 255, 0.04);
+  --shadow-inset-sm: inset 3px 3px 7px rgba(0, 0, 0, 0.55), inset -3px -3px 7px rgba(255, 255, 255, 0.035);
+  --shadow-raised-accent: 6px 6px 18px rgba(242, 103, 63, 0.4), -6px -6px 16px rgba(255, 255, 255, 0.07);
+  --shadow-inset-accent: inset 4px 4px 10px rgba(120, 40, 20, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -51,7 +60,7 @@ html {
 }
 
 body {
-  background-color: var(--cream);
+  background-color: var(--page-bg);
   color: var(--ink);
   font-family: var(--font-jakarta), system-ui, sans-serif;
   min-height: 100vh;
@@ -106,13 +115,38 @@ body {
 .glass-card {
   background: var(--card);
   border: 1px solid var(--line);
+  box-shadow: var(--shadow-raised);
 }
 
-.card-top-red { border-top: 3px solid var(--danger); }
-.card-top-green { border-top: 3px solid var(--success); }
-.card-top-yellow { border-top: 3px solid var(--accent-yellow); }
-.card-top-pink { border-top: 3px solid var(--accent-pink); }
-.card-top-purple { border-top: 3px solid var(--accent-purple); }
+/* Any raw bg-card surface (sidebar, bottom nav, dropdowns, sheets) gets the same soft-extruded treatment */
+.bg-card {
+  box-shadow: var(--shadow-raised);
+}
+
+/* Any raw bg-cream surface (chips, icon wells, keypad buttons) reads as pressed into the material */
+.bg-cream {
+  box-shadow: var(--shadow-inset-sm);
+}
+
+/* Bottom nav bar — pinned to the viewport edge, so the "raised" cue is a shadow cast onto the
+   content above it plus a light highlight along the top edge, rather than a 4-directional shadow */
+.nav-raised {
+  background: var(--card);
+  border: none;
+}
+
+.fab-accent {
+  box-shadow: var(--shadow-raised-accent);
+}
+
+.card-top-accent,
+.card-top-red,
+.card-top-green,
+.card-top-yellow,
+.card-top-pink,
+.card-top-purple {
+  border-top: none;
+}
 
 .gradient-text {
   color: var(--accent);
@@ -129,8 +163,8 @@ body {
   border-radius: 0.75rem;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 8px 18px rgba(238, 108, 77, 0.3);
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-raised-accent);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -138,13 +172,13 @@ body {
 }
 
 .btn-primary:hover:not(:disabled) {
-  filter: brightness(0.94);
-  box-shadow: 0 8px 20px rgba(238, 108, 77, 0.42);
+  filter: brightness(1.05);
   transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: var(--shadow-inset-accent);
 }
 
 .btn-primary:disabled {
@@ -158,10 +192,11 @@ body {
   font-size: 0.875rem;
   padding: 0.5rem 1.25rem;
   border-radius: 0.75rem;
-  border: 1px solid var(--line);
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: transparent;
+  transition: all 0.15s ease;
+  background: var(--card);
+  box-shadow: var(--shadow-raised-sm);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -169,15 +204,17 @@ body {
 }
 
 .btn-ghost:hover {
-  color: var(--ink);
-  border-color: var(--accent);
-  background: rgba(238, 108, 77, 0.06);
+  color: var(--accent);
+}
+
+.btn-ghost:active {
+  box-shadow: var(--shadow-inset-sm);
 }
 
 .input-field {
   width: 100%;
   background: var(--cream);
-  border: 1px solid var(--line);
+  border: none;
   border-radius: 0.75rem;
   color: var(--ink);
   font-size: 0.875rem;
@@ -187,6 +224,7 @@ body {
   appearance: none;
   -webkit-appearance: none;
   color-scheme: dark;
+  box-shadow: var(--shadow-inset-sm);
 }
 
 .input-field::placeholder {
@@ -194,9 +232,8 @@ body {
 }
 
 .input-field:focus {
-  border-color: var(--accent);
-  background: var(--card);
-  box-shadow: 0 0 0 3px rgba(238, 108, 77, 0.16);
+  background: var(--cream);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 3px rgba(238, 108, 77, 0.16);
 }
 
 .input-field option {
@@ -218,6 +255,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 input[type="date"]::-webkit-calendar-picker-indicator:hover,
 input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
+}
+
+/* Skeleton loading placeholders */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--cream);
+  box-shadow: var(--shadow-inset-sm);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+@keyframes skeletonShimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
 /* Mobile bottom-sheet */

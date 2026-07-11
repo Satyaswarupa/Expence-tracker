@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { CategoryPieChart, MonthlyBarChart, DailyHeatmap, CATEGORY_COLORS_MAP } from '@/components/Charts'
 import BottomNav from '@/components/BottomNav'
-import { TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
+import { Skeleton, SkeletonPage, SkeletonLines, SkeletonBlock } from '@/components/Skeleton'
+import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 
 const CATEGORY_EMOJIS = {
   Food: '🍕', Grocery: '🛒', Transport: '🚗', Entertainment: '🎮', Shopping: '🛍️',
@@ -46,11 +47,7 @@ export default function AnalyticsPage() {
   }, [user])
 
   if (authLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
-      </div>
-    )
+    return <SkeletonPage />
   }
 
   const fmtCurrency = (n) =>
@@ -91,7 +88,7 @@ export default function AnalyticsPage() {
             </div>
             <span className="text-ink-muted text-sm">All Time Total</span>
           </div>
-          <p className="font-display text-2xl font-bold text-ink">{loading ? '...' : fmtCurrency(stats?.allTime?.total)}</p>
+          {loading ? <Skeleton className="h-8 w-28" /> : <p className="font-display text-2xl font-bold text-ink">{fmtCurrency(stats?.allTime?.total)}</p>}
           <p className="text-xs text-ink-faint mt-1">{stats?.allTime?.count || 0} transactions</p>
         </div>
 
@@ -105,7 +102,7 @@ export default function AnalyticsPage() {
             </div>
             <span className="text-ink-muted text-sm">This Month</span>
           </div>
-          <p className="font-display text-2xl font-bold text-ink">{loading ? '...' : fmtCurrency(stats?.thisMonth?.total)}</p>
+          {loading ? <Skeleton className="h-8 w-28" /> : <p className="font-display text-2xl font-bold text-ink">{fmtCurrency(stats?.thisMonth?.total)}</p>}
           {monthTrend !== null && (
             <p className={`text-xs mt-1 font-medium ${monthTrend >= 0 ? 'text-danger' : 'text-success'}`}>
               {monthTrend >= 0 ? '↑' : '↓'} {Math.abs(monthTrend)}% vs last month
@@ -120,7 +117,7 @@ export default function AnalyticsPage() {
             </div>
             <span className="text-ink-muted text-sm">Top Category</span>
           </div>
-          <p className="font-display text-2xl font-bold text-ink">{loading ? '...' : topCategory?._id || 'N/A'}</p>
+          {loading ? <Skeleton className="h-8 w-24" /> : <p className="font-display text-2xl font-bold text-ink">{topCategory?._id || 'N/A'}</p>}
           <p className="text-xs text-ink-faint mt-1">
             {topCategory ? fmtCurrency(topCategory.total) : 'No data yet'}
           </p>
@@ -133,9 +130,7 @@ export default function AnalyticsPage() {
           <h2 className="text-sm font-semibold text-ink mb-1">Monthly Spending</h2>
           <p className="text-xs text-ink-faint mb-4">This year month-by-month</p>
           {loading ? (
-            <div className="flex items-center justify-center h-[280px]">
-              <Loader2 className="w-6 h-6 text-accent animate-spin" />
-            </div>
+            <SkeletonBlock className="h-[280px]" />
           ) : (
             <MonthlyBarChart data={stats?.monthlyTrend} />
           )}
@@ -145,9 +140,7 @@ export default function AnalyticsPage() {
           <h2 className="text-sm font-semibold text-ink mb-1">Category Breakdown</h2>
           <p className="text-xs text-ink-faint mb-4">All-time spending by category</p>
           {loading ? (
-            <div className="flex items-center justify-center h-[280px]">
-              <Loader2 className="w-6 h-6 text-accent animate-spin" />
-            </div>
+            <SkeletonBlock className="h-[280px]" />
           ) : (
             <CategoryPieChart data={stats?.byCategory} />
           )}
@@ -158,9 +151,7 @@ export default function AnalyticsPage() {
       <div className="glass-card rounded-2xl p-5">
         <h2 className="text-sm font-semibold text-ink mb-5">Spending by Category</h2>
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 text-accent animate-spin" />
-          </div>
+          <SkeletonLines count={5} />
         ) : stats?.byCategory?.length ? (
           <div className="space-y-4">
             {stats.byCategory.map((cat) => {

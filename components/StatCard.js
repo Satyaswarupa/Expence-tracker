@@ -1,4 +1,6 @@
-export default function StatCard({ title, value, subtitle, icon: Icon, color = 'purple', trend }) {
+import { Skeleton } from './Skeleton'
+
+export default function StatCard({ title, value, subtitle, icon: Icon, color = 'purple', trend, loading = false }) {
   const colorMap = {
     purple: 'bg-danger/15 text-danger',
     emerald: 'bg-success/15 text-success',
@@ -21,7 +23,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
         <div className={`w-10 h-10 rounded-xl ${colorMap[color]} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
           <Icon className="w-5 h-5" />
         </div>
-        {trend !== undefined && (
+        {trend !== undefined && !loading && (
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
             trend >= 0 ? 'text-success bg-success/10' : 'text-danger bg-danger/10'
           }`}>
@@ -30,9 +32,9 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
         )}
       </div>
       <div className="space-y-1">
-        <p className="font-display text-2xl font-bold text-ink tabular-nums">{value}</p>
+        {loading ? <Skeleton className="h-7 w-24" /> : <p className="font-display text-2xl font-bold text-ink tabular-nums">{value}</p>}
         <p className="text-sm font-medium text-ink-soft">{title}</p>
-        {subtitle && <p className="text-xs text-ink-faint">{subtitle}</p>}
+        {loading ? <Skeleton className="h-3 w-16 mt-0.5" /> : subtitle && <p className="text-xs text-ink-faint">{subtitle}</p>}
       </div>
     </div>
   )

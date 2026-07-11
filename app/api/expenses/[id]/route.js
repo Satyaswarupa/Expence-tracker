@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import Expense from '@/models/Expense'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -48,6 +49,9 @@ export async function PUT(request, { params }) {
       global.io.to(`user:${payload.userId}`).emit('expense:updated', expense)
     }
 
+    revalidateTag(`expenses:${payload.userId}`)
+    revalidateTag(`expense-stats:${payload.userId}`)
+
     return Response.json({ expense })
   } catch (err) {
     console.error('PUT /api/expenses/[id]:', err)
@@ -69,6 +73,9 @@ export async function DELETE(request, { params }) {
     if (global.io) {
       global.io.to(`user:${payload.userId}`).emit('expense:deleted', { id })
     }
+
+    revalidateTag(`expenses:${payload.userId}`)
+    revalidateTag(`expense-stats:${payload.userId}`)
 
     return Response.json({ message: 'Expense deleted' })
   } catch (err) {

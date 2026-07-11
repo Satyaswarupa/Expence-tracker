@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import LendingTracker from '@/components/LendingTracker'
 import PendingPaymentTracker from '@/components/PendingPaymentTracker'
 import BottomNav from '@/components/BottomNav'
-import { Loader2 } from 'lucide-react'
+import { SkeletonPage } from '@/components/Skeleton'
 
 const TABS = [
   { key: 'all', label: 'All' },
@@ -26,11 +26,7 @@ export default function LendingPage() {
   }, [user, authLoading])
 
   if (authLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
-      </div>
-    )
+    return <SkeletonPage />
   }
 
   const fmtCurrency = (n) => `₹${(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`

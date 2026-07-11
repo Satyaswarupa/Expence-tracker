@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, X, Trash2, Loader2 } from 'lucide-react'
+import { Plus, X, Trash2 } from 'lucide-react'
 import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
+import { SkeletonPaymentRows } from '@/components/Skeleton'
 
 const PAYMENT_METHODS = ['Cash', 'UPI']
 const PAYMENT_METHOD_EMOJIS = { Cash: '💵', UPI: '📱' }
@@ -193,9 +194,7 @@ export default function PendingPaymentTracker({ onTotalChange } = {}) {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-24">
-          <Loader2 className="w-5 h-5 text-accent animate-spin" />
-        </div>
+        <SkeletonPaymentRows count={3} />
       ) : payments.length ? (
         <div className="space-y-3">
           {payments.map((p) => {

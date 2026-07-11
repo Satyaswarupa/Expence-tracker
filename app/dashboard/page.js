@@ -9,7 +9,8 @@ import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import BottomNav from '@/components/BottomNav'
 import { SpendingAreaChart, CATEGORY_COLORS_MAP } from '@/components/Charts'
-import { TrendingUp, Wallet, Receipt, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
+import { Skeleton, SkeletonPage, SkeletonRows, SkeletonLines, SkeletonBlock } from '@/components/Skeleton'
+import { TrendingUp, Wallet, Receipt, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 
 const PAGE_SIZE = 8
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -152,11 +153,7 @@ export default function DashboardPage() {
   }, [socket, page, fetchStats, fetchExpenses, selectedMonth])
 
   if (authLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
-      </div>
-    )
+    return <SkeletonPage />
   }
 
   const fmtCurrency = (n) =>
@@ -240,14 +237,22 @@ export default function DashboardPage() {
       </div>
 
       {/* Mobile hero card — real data only (no budget field exists in this app) */}
-      <div className="lg:hidden mb-4 rounded-2xl bg-accent text-white p-5 relative overflow-hidden shadow-lg shadow-accent/25">
-        <div className="absolute w-40 h-40 rounded-full bg-white/10 -right-10 -top-14 pointer-events-none" />
-        <div className="text-sm text-white/85 relative">Spent {isCurrentMonth ? 'this month' : `in ${selectedLabel}`}</div>
-        <div className="font-display text-4xl font-bold mt-0.5 relative">
-          {loading ? '...' : fmtCurrency(selectedTotal)}
+      <div className="lg:hidden mb-4 glass-card card-top-accent rounded-2xl p-5">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-ink-muted font-medium">Spent {isCurrentMonth ? 'this month' : `in ${selectedLabel}`}</div>
+          <div className="w-9 h-9 rounded-xl bg-cream flex items-center justify-center text-accent flex-shrink-0">
+            <Wallet className="w-4 h-4" />
+          </div>
         </div>
-        <div className="text-xs text-white/80 mt-2 relative">
-          {selectedCount} transactions
+        {loading ? (
+          <Skeleton className="h-10 w-40 mt-2" />
+        ) : (
+          <div className="font-display text-4xl font-bold mt-2 text-ink tabular-nums">
+            {fmtCurrency(selectedTotal)}
+          </div>
+        )}
+        <div className="text-xs text-ink-faint mt-2">
+          {loading ? <Skeleton className="h-3 w-24" /> : `${selectedCount} transactions`}
         </div>
       </div>
 
@@ -273,9 +278,7 @@ export default function DashboardPage() {
           <button onClick={() => router.push('/analytics')} className="text-xs text-accent font-bold">See all</button>
         </div>
         {loading ? (
-          <div className="flex items-center justify-center h-16">
-            <Loader2 className="w-5 h-5 text-accent animate-spin" />
-          </div>
+          <SkeletonLines count={3} />
         ) : stats?.byCategory?.length ? (
           <>
             <div className="flex h-3.5 rounded-full overflow-hidden mb-3.5">
@@ -308,31 +311,35 @@ export default function DashboardPage() {
       <div className="hidden lg:grid lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Total Spent"
-          value={loading ? '...' : fmtCurrency(stats?.allTime?.total)}
+          value={fmtCurrency(stats?.allTime?.total)}
           subtitle={`${stats?.allTime?.count || 0} transactions`}
           icon={Wallet}
           color="purple"
+          loading={loading}
         />
         <StatCard
           title={isCurrentMonth ? 'This Month' : selectedLabel}
-          value={loading ? '...' : fmtCurrency(selectedTotal)}
+          value={fmtCurrency(selectedTotal)}
           subtitle={`${selectedCount} transactions`}
           icon={TrendingUp}
           color="emerald"
+          loading={loading}
         />
         <StatCard
           title="Transactions"
-          value={loading ? '...' : (stats?.allTime?.count || 0).toString()}
+          value={(stats?.allTime?.count || 0).toString()}
           subtitle="All time entries"
           icon={Receipt}
           color="amber"
+          loading={loading}
         />
         <StatCard
           title="Categories"
-          value={loading ? '...' : (stats?.byCategory?.length || 0).toString()}
+          value={(stats?.byCategory?.length || 0).toString()}
           subtitle="Active categories"
           icon={Tag}
           color="rose"
+          loading={loading}
         />
       </div>
 
@@ -343,9 +350,7 @@ export default function DashboardPage() {
             <h2 className="text-sm font-semibold text-ink mb-1">Spending Over Time</h2>
             <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
             {loading ? (
-              <div className="flex items-center justify-center h-[280px]">
-                <Loader2 className="w-6 h-6 text-accent animate-spin" />
-              </div>
+              <SkeletonBlock className="h-[280px]" />
             ) : (
               <SpendingAreaChart expenses={expenses} />
             )}
@@ -366,9 +371,7 @@ export default function DashboardPage() {
               <h2 className="text-sm font-semibold text-ink">Top Categories</h2>
               <p className="text-xs text-ink-faint mb-4">{selectedLabel}</p>
               {loading ? (
-                <div className="flex items-center justify-center h-32">
-                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
-                </div>
+                <SkeletonLines count={4} />
               ) : stats?.byCategory?.length ? (
                 <div className="space-y-3">
                   {stats.byCategory.slice(0, 5).map((cat) => {
@@ -420,9 +423,7 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-accent animate-spin" />
-          </div>
+          <SkeletonRows count={4} />
         ) : expenses.length ? (
           <>
             <div className={`space-y-2 transition-opacity duration-200 ${pageLoading ? 'opacity-50' : 'opacity-100'}`}>

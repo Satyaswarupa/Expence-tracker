@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import Lending from '@/models/Lending'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -12,6 +13,8 @@ export async function DELETE(request, { params }) {
 
     const lending = await Lending.findOneAndDelete({ _id: id, userId: payload.userId })
     if (!lending) return Response.json({ error: 'Lending not found' }, { status: 404 })
+
+    revalidateTag(`lendings:${payload.userId}`)
 
     return Response.json({ message: 'Lending removed' })
   } catch (err) {

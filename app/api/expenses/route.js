@@ -1,3 +1,4 @@
+import { unstable_cache, revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import Expense from '@/models/Expense'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -7,39 +8,48 @@ export async function GET(request) {
     const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    await connectDB()
-
     const { searchParams } = request.nextUrl
     const category = searchParams.get('category')
     const month = searchParams.get('month')
     const year = searchParams.get('year')
     const limit = parseInt(searchParams.get('limit') || '100')
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-    const skip = (page - 1) * limit
 
-    const query = { userId: payload.userId }
+    const getCachedExpenses = unstable_cache(
+      async (userId) => {
+        await connectDB()
 
-    if (category && category !== 'All') query.category = category
+        const skip = (page - 1) * limit
+        const query = { userId }
 
-    if (month && year) {
-      const start = new Date(parseInt(year), parseInt(month) - 1, 1)
-      const end = new Date(parseInt(year), parseInt(month), 1)
-      query.date = { $gte: start, $lt: end }
-    } else if (year) {
-      const start = new Date(parseInt(year), 0, 1)
-      const end = new Date(parseInt(year) + 1, 0, 1)
-      query.date = { $gte: start, $lt: end }
-    }
+        if (category && category !== 'All') query.category = category
 
-    const [expenses, totalCount] = await Promise.all([
-      Expense.find(query).sort({ date: -1 }).skip(skip).limit(limit),
-      Expense.countDocuments(query),
-    ])
+        if (month && year) {
+          const start = new Date(parseInt(year), parseInt(month) - 1, 1)
+          const end = new Date(parseInt(year), parseInt(month), 1)
+          query.date = { $gte: start, $lt: end }
+        } else if (year) {
+          const start = new Date(parseInt(year), 0, 1)
+          const end = new Date(parseInt(year) + 1, 0, 1)
+          query.date = { $gte: start, $lt: end }
+        }
 
-    const total = expenses.reduce((sum, e) => sum + e.amount, 0)
-    const totalPages = Math.ceil(totalCount / limit) || 1
+        const [expenses, totalCount] = await Promise.all([
+          Expense.find(query).sort({ date: -1 }).skip(skip).limit(limit),
+          Expense.countDocuments(query),
+        ])
 
-    return Response.json({ expenses, total, totalCount, totalPages, page })
+        const total = expenses.reduce((sum, e) => sum + e.amount, 0)
+        const totalPages = Math.ceil(totalCount / limit) || 1
+
+        return { expenses, total, totalCount, totalPages, page }
+      },
+      [payload.userId, category, month, year, String(limit), String(page)],
+      { tags: [`expenses:${payload.userId}`], revalidate: false }
+    )
+
+    const result = await getCachedExpenses(payload.userId)
+    return Response.json(result)
   } catch (err) {
     console.error('Get expenses error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
@@ -76,6 +86,9 @@ export async function POST(request) {
     if (global.io) {
       global.io.to(`user:${payload.userId}`).emit('expense:created', expense)
     }
+
+    revalidateTag(`expenses:${payload.userId}`)
+    revalidateTag(`expense-stats:${payload.userId}`)
 
     return Response.json({ expense }, { status: 201 })
   } catch (err) {

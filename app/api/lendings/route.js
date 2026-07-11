@@ -1,3 +1,4 @@
+import { unstable_cache, revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import Lending from '@/models/Lending'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -7,9 +8,16 @@ export async function GET(request) {
     const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    await connectDB()
+    const getCachedLendings = unstable_cache(
+      async (userId) => {
+        await connectDB()
+        return Lending.find({ userId }).sort({ dateGiven: -1 })
+      },
+      [payload.userId],
+      { tags: [`lendings:${payload.userId}`], revalidate: false }
+    )
 
-    const lendings = await Lending.find({ userId: payload.userId }).sort({ dateGiven: -1 })
+    const lendings = await getCachedLendings(payload.userId)
 
     return Response.json({ lendings })
   } catch (err) {
@@ -39,6 +47,8 @@ export async function POST(request) {
       dateGiven: dateGiven ? new Date(dateGiven) : new Date(),
       expectedReturnDate: expectedReturnDate ? new Date(expectedReturnDate) : null,
     })
+
+    revalidateTag(`lendings:${payload.userId}`)
 
     return Response.json({ lending }, { status: 201 })
   } catch (err) {

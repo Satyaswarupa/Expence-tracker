@@ -1,3 +1,4 @@
+import { unstable_cache, revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import PendingPayment from '@/models/PendingPayment'
 import { getTokenFromRequest } from '@/lib/auth'
@@ -7,9 +8,16 @@ export async function GET(request) {
     const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    await connectDB()
+    const getCachedPayments = unstable_cache(
+      async (userId) => {
+        await connectDB()
+        return PendingPayment.find({ userId }).sort({ date: -1 })
+      },
+      [payload.userId],
+      { tags: [`pending-payments:${payload.userId}`], revalidate: false }
+    )
 
-    const payments = await PendingPayment.find({ userId: payload.userId }).sort({ date: -1 })
+    const payments = await getCachedPayments(payload.userId)
 
     return Response.json({ payments })
   } catch (err) {
@@ -44,6 +52,8 @@ export async function POST(request) {
       paymentMethod: paymentMethod || 'Cash',
       date: date ? new Date(date) : new Date(),
     })
+
+    revalidateTag(`pending-payments:${payload.userId}`)
 
     return Response.json({ payment }, { status: 201 })
   } catch (err) {

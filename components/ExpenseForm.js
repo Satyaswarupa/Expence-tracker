@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Plus, Calendar, Clock, Calculator as CalculatorIcon, Delete } from 'lucide-react'
+import { X, Plus, Calendar, Clock, Calculator as CalculatorIcon, Delete, ChevronDown, ChevronUp } from 'lucide-react'
 import { toLocalDateInputValue, combineLocalDateTime } from '@/lib/date'
 import { CATEGORY_COLORS_MAP } from '@/components/Charts'
 
@@ -71,8 +71,8 @@ function CalculatorPopup({ initialValue, onApply, onClose }) {
       <div className="relative w-full max-w-xs bg-card rounded-2xl border border-line shadow-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display text-sm font-bold text-ink">Calculator</h3>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-cream transition-all">
-            <X className="w-4 h-4" />
+          <button type="button" onClick={onClose} aria-label="Close" className="p-2 rounded-full bg-cream text-ink-soft hover:text-accent transition-all">
+            <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>
 
@@ -144,6 +144,7 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showCalculator, setShowCalculator] = useState(false)
+  const [categoryOpen, setCategoryOpen] = useState(false)
 
   const handleChange = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
@@ -186,8 +187,12 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
           {editData ? 'Edit Expense' : 'Add New Expense'}
         </h2>
         {onClose && (
-          <button onClick={onClose} className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-cream transition-all flex-shrink-0">
-            <X className="w-4 h-4" />
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="p-2 rounded-full bg-cream text-ink-soft hover:text-accent transition-all flex-shrink-0"
+          >
+            <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
         )}
       </div>
@@ -294,10 +299,48 @@ export default function ExpenseForm({ onSuccess, onClose, editData = null }) {
           </div>
         </div>
 
-        {/* Category */}
+        {/* Category — mobile: collapsed dropdown that expands into the grid, desktop: always-visible grid */}
         <div>
           <label className="block text-xs font-medium text-ink-muted mb-1.5">Category</label>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+
+          <div className="lg:hidden">
+            <button
+              type="button"
+              onClick={() => setCategoryOpen((o) => !o)}
+              className="input-field flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: CATEGORY_COLORS_MAP[form.category] || '#B9A99C' }} />
+                <span className="text-ink">{form.category}</span>
+              </span>
+              {categoryOpen ? <ChevronUp className="w-4 h-4 text-ink-faint" /> : <ChevronDown className="w-4 h-4 text-ink-faint" />}
+            </button>
+            {categoryOpen && (
+              <div className="grid grid-cols-3 gap-1.5 mt-1.5">
+                {CATEGORIES.map((cat) => {
+                  const dot = CATEGORY_COLORS_MAP[cat] || '#B9A99C'
+                  const selected = form.category === cat
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => { setForm((p) => ({ ...p, category: cat })); setCategoryOpen(false) }}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
+                        selected
+                          ? 'bg-accent/10 border-accent'
+                          : 'border-line text-ink-faint hover:border-accent/30 hover:text-ink-soft bg-cream'
+                      }`}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-sm" style={{ background: dot }} />
+                      <span className={`w-full text-center leading-tight break-words ${selected ? 'text-ink' : ''}`}>{cat}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="hidden lg:grid grid-cols-4 gap-1.5">
             {CATEGORIES.map((cat) => {
               const dot = CATEGORY_COLORS_MAP[cat] || '#B9A99C'
               const selected = form.category === cat
