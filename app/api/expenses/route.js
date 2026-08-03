@@ -83,10 +83,6 @@ export async function POST(request) {
       date: date ? new Date(date) : new Date(),
     })
 
-    if (global.io) {
-      global.io.to(`user:${payload.userId}`).emit('expense:created', expense)
-    }
-
     revalidateTag(`expenses:${payload.userId}`)
     revalidateTag(`expense-stats:${payload.userId}`)
 

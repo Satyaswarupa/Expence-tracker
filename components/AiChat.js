@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Send, X, Check } from 'lucide-react'
 import { CATEGORY_COLORS_MAP } from '@/components/Charts'
+import { emitExpensesChanged } from '@/lib/expenseEvents'
 
 const fmt = (n) => `₹${(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 
@@ -78,6 +79,8 @@ export default function AiChat() {
         const count = data.created?.length || 0
         const fallback = count ? `Added ${count} expense${count > 1 ? 's' : ''}.` : 'Okay.'
         setMessages((m) => [...m, { role: 'assistant', text: data.reply || fallback, expenses: data.created }])
+        // Let the page behind the chat pick up what we just added
+        if (count) emitExpensesChanged()
       }
     } catch {
       setMessages((m) => [...m, { role: 'assistant', text: 'Network error. Please try again.' }])

@@ -176,13 +176,6 @@ export async function POST(request) {
       )
     )
 
-    // Push each to connected clients so the dashboard updates live (same as the manual form)
-    if (global.io) {
-      for (const expense of created) {
-        global.io.to(`user:${payload.userId}`).emit('expense:created', expense)
-      }
-    }
-
     revalidateTag(`expenses:${payload.userId}`)
     revalidateTag(`expense-stats:${payload.userId}`)
 

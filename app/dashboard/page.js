@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useSocket } from '@/context/SocketContext'
+import { onExpensesChanged } from '@/lib/expenseEvents'
 import StatCard from '@/components/StatCard'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
@@ -50,7 +50,6 @@ function MobileSheet({ open, onClose, children }) {
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
-  const { socket } = useSocket() || {}
   const router = useRouter()
 
   const [stats, setStats] = useState(null)
@@ -121,36 +120,13 @@ export default function DashboardPage() {
     setPageLoading(false)
   }
 
-  // Socket: instant update when expense created/updated/deleted
+  // Expenses added elsewhere in the app (AI chat) — pull the fresh list
   useEffect(() => {
-    if (!socket) return
-    const handleCreated = (expense) => {
-      // Only prepend on page 1, and only when the new expense actually falls in the selected month
-      const d = new Date(expense.date)
-      const belongsToSelectedMonth = d.getMonth() + 1 === selectedMonth.month && d.getFullYear() === selectedMonth.year
-      if (page === 1 && belongsToSelectedMonth) {
-        setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
-      }
-      fetchStats()
-    }
-    const handleUpdated = (expense) => {
-      setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
-      fetchStats()
-    }
-    const handleDeleted = ({ id }) => {
-      setExpenses((prev) => prev.filter((e) => e._id !== id))
+    return onExpensesChanged(() => {
       fetchStats()
       fetchExpenses(page)
-    }
-    socket.on('expense:created', handleCreated)
-    socket.on('expense:updated', handleUpdated)
-    socket.on('expense:deleted', handleDeleted)
-    return () => {
-      socket.off('expense:created', handleCreated)
-      socket.off('expense:updated', handleUpdated)
-      socket.off('expense:deleted', handleDeleted)
-    }
-  }, [socket, page, fetchStats, fetchExpenses, selectedMonth])
+    })
+  }, [page, fetchStats, fetchExpenses])
 
   if (authLoading || !user) {
     return <SkeletonPage />
@@ -169,17 +145,21 @@ export default function DashboardPage() {
     if (!expense) return
 
     if (editExpense) {
-      // Edit: update in-place (socket will also fire but map is idempotent)
       setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
       fetchStats()
-    } else if (!socket) {
-      // No socket connection: add optimistically since expense:created won't fire
-      setPage(1)
-      setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
-      setTotalPages((prev) => Math.max(prev, 1))
-      fetchStats()
+      return
     }
-    // When socket is connected, let expense:created handle the list update
+
+    // New expense: show it straight away when it lands in the month being viewed,
+    // then let the background refetch settle ordering and page count.
+    const d = new Date(expense.date)
+    const belongsToSelectedMonth = d.getMonth() + 1 === selectedMonth.month && d.getFullYear() === selectedMonth.year
+    if (belongsToSelectedMonth) {
+      if (page === 1) setExpenses((prev) => [expense, ...prev].slice(0, PAGE_SIZE))
+      else setPage(1)
+      fetchExpenses(1)
+    }
+    fetchStats()
   }
 
   const openAddForm = () => { setShowForm(true); setEditExpense(null) }

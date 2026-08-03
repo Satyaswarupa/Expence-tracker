@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useSocket } from '@/context/SocketContext'
 import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -15,7 +14,6 @@ const navItems = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
-  const { connected } = useSocket() || {}
   const pathname = usePathname()
 
   if (!user) return null
@@ -77,20 +75,6 @@ export default function Sidebar() {
             )
           })}
         </nav>
-
-        {/* Live indicator */}
-        <div className="px-5 py-3">
-          <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border w-fit transition-all ${
-            connected
-              ? 'text-success border-success/25 bg-success/10'
-              : 'text-ink-faint border-line bg-cream'
-          }`}>
-            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-              connected ? 'bg-success animate-pulse' : 'bg-ink-faint'
-            }`} />
-            <span className="font-medium">{connected ? 'Live sync on' : 'Offline mode'}</span>
-          </div>
-        </div>
 
         {/* Divider */}
         <div className="mx-4 h-px bg-line" />

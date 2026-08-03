@@ -2,7 +2,6 @@ import { Bricolage_Grotesque, Plus_Jakarta_Sans } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
-import { SocketProvider } from '@/context/SocketContext'
 import Sidebar from '@/components/Sidebar'
 import MainContent from '@/components/MainContent'
 
@@ -99,10 +98,8 @@ export default function RootLayout({ children }) {
         />
         <ClerkProvider>
           <AuthProvider>
-            <SocketProvider>
-              <Sidebar />
-              <MainContent>{children}</MainContent>
-            </SocketProvider>
+            <Sidebar />
+            <MainContent>{children}</MainContent>
           </AuthProvider>
         </ClerkProvider>
       </body>

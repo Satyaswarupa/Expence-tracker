@@ -21,8 +21,8 @@ const features = [
   },
   {
     icon: Zap,
-    title: 'Real-time Updates',
-    desc: 'Socket.io powered live sync across all your devices. Add expense on phone, see on desktop instantly.',
+    title: 'Instant Updates',
+    desc: 'Add an expense and watch your totals and charts update on the spot — no page reloads, no waiting.',
     color: 'bg-[#F4A93B]',
   },
   {
@@ -180,7 +180,7 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-line py-6 text-center text-ink-faint text-sm">
         <div className="flex items-center justify-center gap-2">
           <span className="font-display font-extrabold text-accent">M</span>
-          <span>MoneyJot — Built with Next.js, MongoDB &amp; Socket.io</span>
+          <span>MoneyJot — Built with Next.js &amp; MongoDB</span>
         </div>
       </footer>
     </div>

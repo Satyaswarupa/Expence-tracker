@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useSocket } from '@/context/SocketContext'
+import { onExpensesChanged } from '@/lib/expenseEvents'
 import ExpenseCard from '@/components/ExpenseCard'
 import ExpenseForm from '@/components/ExpenseForm'
 import BottomNav from '@/components/BottomNav'
@@ -19,7 +19,6 @@ const MONTHS = [
 
 export default function ExpensesPage() {
   const { user, loading: authLoading } = useAuth()
-  const { socket } = useSocket() || {}
   const router = useRouter()
 
   const [expenses, setExpenses] = useState([])
@@ -64,18 +63,8 @@ export default function ExpensesPage() {
     if (user) fetchExpenses()
   }, [user, fetchExpenses])
 
-  useEffect(() => {
-    if (!socket) return
-    const refresh = () => fetchExpenses()
-    socket.on('expense:created', refresh)
-    socket.on('expense:updated', refresh)
-    socket.on('expense:deleted', refresh)
-    return () => {
-      socket.off('expense:created', refresh)
-      socket.off('expense:updated', refresh)
-      socket.off('expense:deleted', refresh)
-    }
-  }, [socket, fetchExpenses])
+  // Expenses added elsewhere in the app (AI chat) — pull the fresh list
+  useEffect(() => onExpensesChanged(() => fetchExpenses()), [fetchExpenses])
 
   if (authLoading || !user) {
     return <SkeletonPage />
@@ -119,7 +108,7 @@ export default function ExpensesPage() {
           <ExpenseForm
             key={editExpense?._id || 'new'}
             editData={editExpense}
-            onSuccess={() => { setShowForm(false); setEditExpense(null); if (!socket) fetchExpenses() }}
+            onSuccess={() => { setShowForm(false); setEditExpense(null); fetchExpenses() }}
             onClose={() => { setShowForm(false); setEditExpense(null) }}
           />
         </div>

@@ -45,10 +45,6 @@ export async function PUT(request, { params }) {
 
     if (!expense) return Response.json({ error: 'Expense not found' }, { status: 404 })
 
-    if (global.io) {
-      global.io.to(`user:${payload.userId}`).emit('expense:updated', expense)
-    }
-
     revalidateTag(`expenses:${payload.userId}`)
     revalidateTag(`expense-stats:${payload.userId}`)
 
@@ -69,10 +65,6 @@ export async function DELETE(request, { params }) {
 
     const expense = await Expense.findOneAndDelete({ _id: id, userId: payload.userId })
     if (!expense) return Response.json({ error: 'Expense not found' }, { status: 404 })
-
-    if (global.io) {
-      global.io.to(`user:${payload.userId}`).emit('expense:deleted', { id })
-    }
 
     revalidateTag(`expenses:${payload.userId}`)
     revalidateTag(`expense-stats:${payload.userId}`)
