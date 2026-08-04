@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Logo from '@/components/Logo'
-import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut } from 'lucide-react'
+import { LayoutDashboard, Receipt, Target, BarChart3, HandCoins, LogOut } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/expenses', label: 'Expenses', icon: Receipt },
+  { href: '/budget', label: 'Budget', icon: Target },
   { href: '/analytics', label: 'Reports', icon: BarChart3 },
   { href: '/lending', label: 'People', icon: HandCoins },
 ]

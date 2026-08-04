@@ -2,16 +2,10 @@ import { revalidateTag } from 'next/cache'
 import { connectDB } from '@/lib/mongodb'
 import Expense from '@/models/Expense'
 import { getTokenFromRequest } from '@/lib/auth'
+import { callGemini, hasGeminiKey } from '@/lib/gemini'
+import { CATEGORIES } from '@/lib/budget'
 
-// Keep in sync with the enum in models/Expense.js
-const CATEGORIES = ['Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other']
 const PAYMENT_METHODS = ['Cash', 'UPI']
-
-// Free tier: https://aistudio.google.com/apikey
-// Tried in order; the first that works is cached for the process. `-latest` aliases
-// track Google's current Flash model, so this keeps working as models come and go.
-const MODEL_CANDIDATES = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-flash-lite-latest', 'gemini-2.5-flash']
-let resolvedModel = null
 
 // Gemini uses an OpenAPI-subset schema (UPPERCASE types, no additionalProperties)
 const GEMINI_SCHEMA = {
@@ -57,73 +51,12 @@ function systemPrompt() {
   ].join('\n')
 }
 
-async function requestGemini(model, text, signal) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt() }] },
-        contents: [{ role: 'user', parts: [{ text }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: 'application/json',
-          responseSchema: GEMINI_SCHEMA,
-        },
-      }),
-      signal,
-    }
-  )
-
-  if (res.status === 404) {
-    const err = new Error(`Gemini model ${model} not available`)
-    err.modelNotFound = true
-    throw err
-  }
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    throw new Error(`Gemini ${res.status}: ${detail.slice(0, 300)}`)
-  }
-
-  const data = await res.json()
-  const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!jsonText) return null // safety block or empty response
-  return JSON.parse(jsonText)
-}
-
-async function callGemini(text) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30000)
-  try {
-    const models = resolvedModel ? [resolvedModel] : MODEL_CANDIDATES
-    let lastErr
-    for (const model of models) {
-      try {
-        const result = await requestGemini(model, text, controller.signal)
-        resolvedModel = model // remember the one that worked
-        return result
-      } catch (err) {
-        lastErr = err
-        if (err.modelNotFound) continue // try the next candidate
-        throw err
-      }
-    }
-    throw lastErr
-  } finally {
-    clearTimeout(timeout)
-  }
-}
-
 export async function POST(request) {
   try {
     const payload = await getTokenFromRequest(request)
     if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!hasGeminiKey()) {
       return Response.json(
         { error: 'AI is not configured. Add GEMINI_API_KEY to your environment to enable the assistant.' },
         { status: 503 }
@@ -137,7 +70,7 @@ export async function POST(request) {
 
     let parsed
     try {
-      parsed = await callGemini(text)
+      parsed = await callGemini({ system: systemPrompt(), user: text, schema: GEMINI_SCHEMA })
     } catch (err) {
       console.error('AI parse error:', err)
       return Response.json({ error: 'The assistant is unavailable right now. Please try again.' }, { status: 502 })

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { CATEGORIES } from '@/lib/budget'
 
 const expenseSchema = new mongoose.Schema(
   {
@@ -8,7 +9,7 @@ const expenseSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Food', 'Grocery', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Education', 'Bills', 'Fuel', 'Labour', 'Material', 'Investment', 'Other'],
+      enum: CATEGORIES,
     },
     description: { type: String, trim: true, default: '' },
     paymentMethod: { type: String, enum: ['Cash', 'UPI'], default: 'Cash' },
