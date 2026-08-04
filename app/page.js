@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 import { BarChart3, Shield, Zap, ArrowRight, Receipt, PieChart, Bell } from 'lucide-react'
 
 const features = [
@@ -55,9 +56,7 @@ export default function LandingPage() {
       {/* Nav — only visible to logged-out users; Navbar in layout returns null when !user */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-lg shadow-accent/30">
-            <span className="font-display font-extrabold text-sm text-white leading-none">M</span>
-          </div>
+          <Logo size={32} priority />
           <span className="gradient-text text-lg">MoneyJot</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -179,7 +178,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-line py-6 text-center text-ink-faint text-sm">
         <div className="flex items-center justify-center gap-2">
-          <span className="font-display font-extrabold text-accent">M</span>
+          <Logo size={20} />
           <span>MoneyJot — Built with Next.js &amp; MongoDB</span>
         </div>
       </footer>

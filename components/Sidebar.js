@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import Logo from '@/components/Logo'
 import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -32,9 +33,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="px-6 pt-7 pb-6">
           <Link href="/dashboard" className="flex items-center gap-3 group w-fit">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/30 group-hover:scale-105 transition-all duration-200">
-              <span className="font-display font-extrabold text-lg text-white leading-none">M</span>
-            </div>
+            <Logo size={36} priority className="group-hover:scale-105 transition-transform duration-200" />
             <span className="gradient-text text-lg leading-none block">MoneyJot</span>
           </Link>
         </div>

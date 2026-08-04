@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import GoogleIcon from '@/components/GoogleIcon'
+import Logo from '@/components/Logo'
 
 const FEATURES = [
   'Auto category insights every month',
@@ -58,9 +59,7 @@ export default function LoginPage() {
         <div className="absolute w-[260px] h-[260px] rounded-full bg-white/10 -left-24 -bottom-20 pointer-events-none" />
 
         <Link href="/" className="flex items-center gap-3 relative z-10 w-fit">
-          <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <span className="font-display font-extrabold text-xl leading-none">M</span>
-          </div>
+          <Logo size={44} priority className="flex-shrink-0" />
           <span className="font-display font-bold text-xl">MoneyJot</span>
         </Link>
 
@@ -89,9 +88,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile-only header */}
           <div className="lg:hidden text-center mb-9">
-            <div className="w-16 h-16 rounded-2xl bg-accent inline-flex items-center justify-center shadow-lg shadow-accent/30">
-              <span className="font-display font-extrabold text-3xl text-white leading-none">M</span>
-            </div>
+            <Logo size={64} priority className="inline-block" />
             <div className="font-display font-bold text-xl text-ink mt-3">MoneyJot</div>
             <div className="text-sm text-ink-muted mt-1">Your money, neatly jotted.</div>
           </div>

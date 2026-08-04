@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import Logo from '@/components/Logo'
 import { LayoutDashboard, Receipt, BarChart3, HandCoins, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -44,9 +45,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-lg shadow-accent/30">
-              <span className="font-display font-extrabold text-sm text-white leading-none">M</span>
-            </div>
+            <Logo size={32} priority />
             <span className="gradient-text text-lg">MoneyJot</span>
           </Link>
 

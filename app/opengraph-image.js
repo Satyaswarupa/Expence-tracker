@@ -1,10 +1,16 @@
 import { ImageResponse } from 'next/og'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 export const alt = 'MoneyJot — Expense Tracker by Satyaswarupa Parida'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
+  // Satori cannot resolve a relative src, so the mark is inlined as a data URI.
+  const logo = await readFile(join(process.cwd(), 'public/moneyjot-logo.png'))
+  const logoSrc = `data:image/png;base64,${logo.toString('base64')}`
+
   return new ImageResponse(
     (
       <div
@@ -21,22 +27,8 @@ export default async function Image() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 110,
-              height: 110,
-              borderRadius: 28,
-              background: '#F2673F',
-              fontSize: 64,
-              fontWeight: 800,
-              color: 'white',
-            }}
-          >
-            M
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoSrc} alt="" width={170} height={170} />
           <div style={{ display: 'flex', fontSize: 90, fontWeight: 800, color: '#F3F3F6' }}>
             MoneyJot
           </div>
