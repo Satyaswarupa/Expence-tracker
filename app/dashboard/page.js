@@ -10,66 +10,10 @@ import ExpenseForm from '@/components/ExpenseForm'
 import BottomNav from '@/components/BottomNav'
 import { SpendingAreaChart, CATEGORY_COLORS_MAP } from '@/components/Charts'
 import { Skeleton, SkeletonPage, SkeletonRows, SkeletonLines, SkeletonBlock } from '@/components/Skeleton'
-import { fmtCurrency as fmtBudget, STATUS_LABEL, STATUS_TONE } from '@/lib/budget'
-import { TrendingUp, Wallet, Tag, Plus, Target, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { TrendingUp, Wallet, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 
 const PAGE_SIZE = 8
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-const BUDGET_TONE = {
-  success: { text: 'text-success', bar: 'var(--success)' },
-  'accent-yellow': { text: 'text-accent-yellow', bar: 'var(--accent-yellow)' },
-  danger: { text: 'text-danger', bar: 'var(--danger)' },
-  'ink-faint': { text: 'text-ink-faint', bar: 'var(--ink-faint)' },
-}
-
-/** Compact budget strip — the full picture lives on /budget. */
-function BudgetBar({ budget, onOpen }) {
-  const tone = BUDGET_TONE[STATUS_TONE[budget.pace.status]] || BUDGET_TONE['ink-faint']
-  const amount = budget.budget?.amount || 0
-
-  if (!amount) {
-    return (
-      <button onClick={onOpen} className="w-full flex items-center gap-3 mt-4 pt-4 border-t border-line text-left">
-        <div className="w-9 h-9 rounded-xl bg-cream flex items-center justify-center text-accent flex-shrink-0">
-          <Target className="w-4 h-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-ink leading-snug">Set a monthly budget</div>
-          <div className="text-[11px] text-ink-faint">Then let the AI coach find what you can save</div>
-        </div>
-        <span className="text-xs font-bold text-accent flex-shrink-0">Set →</span>
-      </button>
-    )
-  }
-
-  return (
-    <button onClick={onOpen} className="w-full mt-4 pt-4 border-t border-line text-left">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-ink-muted">
-          Budget {fmtBudget(amount)}
-        </span>
-        <span className={`text-[11px] font-bold ${tone.text}`}>{STATUS_LABEL[budget.pace.status]}</span>
-      </div>
-      <div className="h-2 rounded-full bg-cream overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${Math.min(100, budget.pace.usedPct)}%`, background: tone.bar }}
-        />
-      </div>
-      <div className="flex items-center justify-between gap-2 mt-2 text-[11px] text-ink-faint">
-        <span className="tabular-nums flex-shrink-0">
-          {budget.pace.over > 0
-            ? `${fmtBudget(budget.pace.over)} over`
-            : `${fmtBudget(budget.pace.left)} left`}
-        </span>
-        {budget.pace.daysLeft > 0 && (
-          <span className="tabular-nums truncate">{fmtBudget(budget.pace.dailyAllowance)}/day for {budget.pace.daysLeft}d</span>
-        )}
-      </div>
-    </button>
-  )
-}
 
 function MobileSheet({ open, onClose, children }) {
   const [visible, setVisible] = useState(false)
@@ -104,60 +48,6 @@ function MobileSheet({ open, onClose, children }) {
   )
 }
 
-/** Desktop stat tile: budget headline plus how the month is pacing. */
-function BudgetStatCard({ budget, loading, onOpen }) {
-  const amount = budget?.budget?.amount || 0
-  const pace = budget?.pace
-  const tone = BUDGET_TONE[STATUS_TONE[pace?.status]] || BUDGET_TONE['ink-faint']
-
-  return (
-    <button
-      onClick={onOpen}
-      className="glass-card card-top-yellow rounded-2xl p-5 text-left hover:border-accent/25 transition-all duration-300 group"
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 rounded-xl bg-accent-yellow/15 text-accent-yellow flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          <Target className="w-5 h-5" />
-        </div>
-        {!loading && pace && (
-          <span className={`text-xs font-medium px-2 py-1 rounded-full ${tone.text} bg-cream`}>
-            {STATUS_LABEL[pace.status]}
-          </span>
-        )}
-      </div>
-      <div className="space-y-1">
-        {loading ? (
-          <Skeleton className="h-7 w-24" />
-        ) : (
-          <p className="font-display text-2xl font-bold text-ink tabular-nums">
-            {amount ? fmtBudget(amount) : 'Not set'}
-          </p>
-        )}
-        <p className="text-sm font-medium text-ink-soft">Monthly Budget</p>
-        {loading ? (
-          <Skeleton className="h-3 w-16 mt-0.5" />
-        ) : (
-          <p className="text-xs text-ink-faint">
-            {amount
-              ? pace.over > 0
-                ? `${fmtBudget(pace.over)} over · ${pace.usedPct}% used`
-                : `${fmtBudget(pace.left)} left · ${pace.usedPct}% used`
-              : 'Set one to unlock the AI coach'}
-          </p>
-        )}
-      </div>
-      {amount > 0 && !loading && (
-        <div className="h-1.5 rounded-full bg-cream overflow-hidden mt-3">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${Math.min(100, pace.usedPct)}%`, background: tone.bar }}
-          />
-        </div>
-      )}
-    </button>
-  )
-}
-
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -172,7 +62,6 @@ export default function DashboardPage() {
   const [pageLoading, setPageLoading] = useState(false)
   const [owedToYou, setOwedToYou] = useState(0)
   const [youOwe, setYouOwe] = useState(0)
-  const [budget, setBudget] = useState(null)
   const now = new Date()
   const [selectedMonth, setSelectedMonth] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
@@ -183,11 +72,6 @@ export default function DashboardPage() {
   const fetchStats = useCallback(async (m = selectedMonth) => {
     const res = await fetch(`/api/expenses/stats?month=${m.month}&year=${m.year}`)
     if (res.ok) setStats(await res.json())
-  }, [selectedMonth])
-
-  const fetchBudget = useCallback(async (m = selectedMonth) => {
-    const res = await fetch(`/api/budget?month=${m.month}&year=${m.year}`)
-    if (res.ok) setBudget(await res.json())
   }, [selectedMonth])
 
   // Real money & people totals (same aggregation already used on the People page)
@@ -219,11 +103,11 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async (p = 1) => {
     try {
-      await Promise.all([fetchStats(), fetchExpenses(p), fetchBudget()])
+      await Promise.all([fetchStats(), fetchExpenses(p)])
     } finally {
       setLoading(false)
     }
-  }, [fetchStats, fetchExpenses, fetchBudget])
+  }, [fetchStats, fetchExpenses])
 
   useEffect(() => {
     if (user) fetchData(1)
@@ -241,9 +125,8 @@ export default function DashboardPage() {
     return onExpensesChanged(() => {
       fetchStats()
       fetchExpenses(page)
-      fetchBudget()
     })
-  }, [page, fetchStats, fetchExpenses, fetchBudget])
+  }, [page, fetchStats, fetchExpenses])
 
   if (authLoading || !user) {
     return <SkeletonPage />
@@ -264,7 +147,6 @@ export default function DashboardPage() {
     if (editExpense) {
       setExpenses((prev) => prev.map((e) => (e._id === expense._id ? expense : e)))
       fetchStats()
-      fetchBudget()
       return
     }
 
@@ -278,7 +160,6 @@ export default function DashboardPage() {
       fetchExpenses(1)
     }
     fetchStats()
-    fetchBudget()
   }
 
   const openAddForm = () => { setShowForm(true); setEditExpense(null) }
@@ -353,11 +234,6 @@ export default function DashboardPage() {
         <div className="text-xs text-ink-faint mt-2">
           {loading ? <Skeleton className="h-3 w-24" /> : `${selectedCount} transactions`}
         </div>
-        {loading ? (
-          <Skeleton className="h-10 w-full mt-4" />
-        ) : (
-          budget && <BudgetBar budget={budget} onOpen={() => router.push('/budget')} />
-        )}
       </div>
 
       {/* Mobile money & people row — real totals from /api/lendings + /api/pending-payments */}
@@ -412,7 +288,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats grid — desktop only, mobile has its own hero/category cards above */}
-      <div className="hidden lg:grid lg:grid-cols-4 gap-4 mb-8">
+      <div className="hidden lg:grid lg:grid-cols-3 gap-4 mb-8">
         <StatCard
           title="Total Spent"
           value={fmtCurrency(stats?.allTime?.total)}
@@ -429,7 +305,6 @@ export default function DashboardPage() {
           color="emerald"
           loading={loading}
         />
-        <BudgetStatCard budget={budget} loading={loading} onOpen={() => router.push('/budget')} />
         <StatCard
           title="Categories"
           value={(stats?.byCategory?.length || 0).toString()}
@@ -532,7 +407,6 @@ export default function DashboardPage() {
                     setExpenses((p) => p.filter((e) => e._id !== id))
                     fetchStats()
                     fetchExpenses(page)
-                    fetchBudget()
                   }}
                   onEdit={(exp) => { setEditExpense(exp); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 />

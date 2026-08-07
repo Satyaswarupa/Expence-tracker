@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Receipt, Target, BarChart3, HandCoins, Plus } from 'lucide-react'
+import { LayoutDashboard, Receipt, BarChart3, HandCoins, Plus } from 'lucide-react'
 
 const leftItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -10,7 +10,6 @@ const leftItems = [
 ]
 
 const rightItems = [
-  { href: '/budget', label: 'Budget', icon: Target },
   { href: '/analytics', label: 'Reports', icon: BarChart3 },
   { href: '/lending', label: 'People', icon: HandCoins },
 ]
