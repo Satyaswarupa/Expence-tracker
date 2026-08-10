@@ -95,18 +95,16 @@ export async function POST(request) {
 
     await connectDB()
 
-    const created = await Promise.all(
-      valid.map((e) =>
-        Expense.create({
-          userId: payload.userId,
-          title: e.title || e.category,
-          amount: e.amount,
-          category: e.category,
-          description: 'Added via AI assistant',
-          paymentMethod: e.paymentMethod,
-          date: new Date(),
-        })
-      )
+    const created = await Expense.insertMany(
+      valid.map((e) => ({
+        userId: payload.userId,
+        title: e.title || e.category,
+        amount: e.amount,
+        category: e.category,
+        description: 'Added via AI assistant',
+        paymentMethod: e.paymentMethod,
+        date: new Date(),
+      }))
     )
 
     revalidateTag(`expenses:${payload.userId}`)
