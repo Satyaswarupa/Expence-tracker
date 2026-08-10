@@ -1,5 +1,5 @@
+import { auth } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
-import { getTokenFromRequest } from '@/lib/auth'
 import { hasGeminiKey } from '@/lib/gemini'
 import { VOICE_MODEL, buildVoiceLiveConfig } from '@/lib/voiceAssistant'
 
@@ -7,10 +7,15 @@ import { VOICE_MODEL, buildVoiceLiveConfig } from '@/lib/voiceAssistant'
 // Gemini Live API over WebSocket — the real GEMINI_API_KEY never leaves the
 // server. The session's model, system prompt, voice and tools are locked into
 // the token itself (liveConnectConstraints), so the client can't override them.
-export async function POST(request) {
+//
+// Auth check is Clerk's auth() directly (not lib/auth's getTokenFromRequest),
+// which would also resolve/upsert the app's Mongo User doc — a DB round trip
+// this route doesn't need, since it never uses that id. Skipping it shaves a
+// database hop off the critical path every time a voice call starts.
+export async function POST() {
   try {
-    const payload = await getTokenFromRequest(request)
-    if (!payload) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const { userId } = await auth()
+    if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     if (!hasGeminiKey()) {
       return Response.json(

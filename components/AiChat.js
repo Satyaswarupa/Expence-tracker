@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Send, X, Check, Mic } from 'lucide-react'
 import { CATEGORY_COLORS_MAP } from '@/components/Charts'
 import { emitExpensesChanged } from '@/lib/expenseEvents'
+import { voiceGreeting } from '@/lib/voiceAssistant'
 
 const fmt = (n) => `₹${(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 
@@ -136,6 +137,16 @@ export default function AiChat() {
   const userTranscriptRef = useRef('')
   const assistantTranscriptRef = useRef('')
   const endRequestedRef = useRef(false)
+  // The greeting is seeded locally as soon as the panel opens (see
+  // openVoiceAssistant); this suppresses the duplicate bubble once Gemini's
+  // spoken greeting round-trips back as a transcribed turn.
+  const skipGreetingTranscriptRef = useRef(false)
+  // Mirrors `connecting` state but updates synchronously, so a second tap
+  // that lands before React re-renders (ghost clicks, fast double-tap) can't
+  // race past the `connecting` state check and open two live sessions at
+  // once — which was causing expenses to get logged twice and the assistant
+  // to speak every reply twice.
+  const connectingRef = useRef(false)
 
   useEffect(() => {
     if (open) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -219,6 +230,72 @@ export default function AiChat() {
             byCategory: byCategory.slice(0, 6).map((c) => ({ category: c._id, total: Math.round(c.total) })),
           },
         })
+      } else if (fc.name === 'find_expenses') {
+        const query = typeof fc.args?.query === 'string' ? fc.args.query.trim().toLowerCase() : ''
+        const category = fc.args?.category
+        let results = []
+        try {
+          const params = new URLSearchParams({ limit: '50' })
+          if (category) params.set('category', category)
+          const res = await fetch(`/api/expenses?${params}`)
+          if (res.ok) {
+            const data = await res.json()
+            let list = data.expenses || []
+            if (query) {
+              const matched = list.filter((e) => e.title?.toLowerCase().includes(query))
+              if (matched.length) list = matched
+            }
+            results = list.slice(0, 15).map((e) => ({
+              id: e._id,
+              title: e.title,
+              amount: e.amount,
+              category: e.category,
+              paymentMethod: e.paymentMethod,
+              date: new Date(e.date).toISOString().slice(0, 10),
+            }))
+          }
+        } catch { /* reported back as an empty list below */ }
+        responses.push({ id: fc.id, name: fc.name, response: { expenses: results } })
+      } else if (fc.name === 'delete_expense') {
+        const expenseId = fc.args?.id
+        let ok = false
+        if (expenseId) {
+          try {
+            const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
+            ok = res.ok
+            if (ok) emitExpensesChanged()
+          } catch { /* reported back as ok: false below */ }
+        }
+        responses.push({ id: fc.id, name: fc.name, response: { ok } })
+      } else if (fc.name === 'update_expense') {
+        const { id: expenseId, title, amount, category, paymentMethod } = fc.args || {}
+        let ok = false
+        if (expenseId) {
+          try {
+            // Merged with the current record (not just the changed fields) so
+            // this PUT — which replaces the whole document — can't wipe out
+            // description/date just because the model didn't echo them back.
+            const currentRes = await fetch(`/api/expenses/${expenseId}`)
+            const existing = currentRes.ok ? (await currentRes.json()).expense : null
+            if (existing) {
+              const res = await fetch(`/api/expenses/${expenseId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: title ?? existing.title,
+                  amount: amount ?? existing.amount,
+                  category: category ?? existing.category,
+                  paymentMethod: paymentMethod ?? existing.paymentMethod,
+                  description: existing.description,
+                  date: existing.date,
+                }),
+              })
+              ok = res.ok
+              if (ok) emitExpensesChanged()
+            }
+          } catch { /* reported back as ok: false below */ }
+        }
+        responses.push({ id: fc.id, name: fc.name, response: { ok } })
       } else if (fc.name === 'end_conversation') {
         endRequestedRef.current = true
         responses.push({ id: fc.id, name: fc.name, response: { ok: true } })
@@ -255,7 +332,13 @@ export default function AiChat() {
       setInput('')
       setSpeaking(false)
       if (userText) setMessages((m) => [...m, { role: 'user', text: userText }])
-      if (assistantText) setMessages((m) => [...m, { role: 'assistant', text: assistantText }])
+      if (assistantText) {
+        if (skipGreetingTranscriptRef.current) {
+          skipGreetingTranscriptRef.current = false
+        } else {
+          setMessages((m) => [...m, { role: 'assistant', text: assistantText }])
+        }
+      }
       if (endRequestedRef.current) {
         endRequestedRef.current = false
         stopVoiceCall()
@@ -279,6 +362,7 @@ export default function AiChat() {
     userTranscriptRef.current = ''
     assistantTranscriptRef.current = ''
     endRequestedRef.current = false
+    connectingRef.current = false
     setListening(false)
     setSpeaking(false)
     setConnecting(false)
@@ -301,20 +385,44 @@ export default function AiChat() {
   }, [])
 
   const startVoiceCall = async () => {
-    if (!voiceSupported || sessionRef.current || connecting) return
+    if (!voiceSupported || sessionRef.current || connectingRef.current) return
+    connectingRef.current = true
     setConnecting(true)
     try {
-      const tokenRes = await fetch('/api/ai/voice-token', { method: 'POST' })
+      // Token fetch, mic permission and the SDK's dynamic import don't
+      // depend on each other, so they run concurrently instead of one
+      // after another — this is most of what made "Connecting…" feel slow.
+      const [tokenResult, streamResult, sdkResult] = await Promise.allSettled([
+        fetch('/api/ai/voice-token', { method: 'POST' }),
+        navigator.mediaDevices.getUserMedia({
+          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        }),
+        // Loaded on demand (not at module scope) so the SDK only ships to
+        // users who actually use voice; also prefetched on pointerdown of
+        // the launcher button (see below) so it's often already cached.
+        import('@google/genai'),
+      ])
+
+      // Don't leave the mic recording indicator on for a call that isn't
+      // going to happen because one of the other two failed.
+      if (streamResult.status === 'fulfilled' && (tokenResult.status === 'rejected' || sdkResult.status === 'rejected')) {
+        streamResult.value.getTracks().forEach((t) => t.stop())
+      }
+      if (tokenResult.status === 'rejected') throw tokenResult.reason
+      if (streamResult.status === 'rejected') throw streamResult.reason
+      if (sdkResult.status === 'rejected') throw sdkResult.reason
+
+      const tokenRes = tokenResult.value
       const tokenData = await tokenRes.json()
       if (!tokenRes.ok) {
+        streamResult.value.getTracks().forEach((t) => t.stop())
         setMessages((m) => [...m, { role: 'assistant', text: tokenData.error || 'Could not start the voice assistant.' }])
+        connectingRef.current = false
         setConnecting(false)
         return
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-      })
+      const stream = streamResult.value
       streamRef.current = stream
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext
@@ -323,7 +431,10 @@ export default function AiChat() {
       const source = inputCtx.createMediaStreamSource(stream)
       // ScriptProcessorNode is deprecated but needs no extra worklet asset file
       // and every browser we target still supports it — simplest reliable option.
-      const processor = inputCtx.createScriptProcessor(4096, 1, 1)
+      // Buffer size trades latency for overhead: at 16kHz, 4096 samples means
+      // ~256ms of speech sits in the browser before each chunk is sent to
+      // Gemini; 1024 cuts that to ~64ms of added mic-to-network latency.
+      const processor = inputCtx.createScriptProcessor(1024, 1, 1)
       processorRef.current = processor
       processor.onaudioprocess = (e) => {
         const pcm16 = floatTo16BitPCM(e.inputBuffer.getChannelData(0))
@@ -340,8 +451,7 @@ export default function AiChat() {
       playCtxRef.current = playCtx
       nextPlayTimeRef.current = 0
 
-      // Loaded on demand so the SDK only ships to users who actually use voice.
-      const { GoogleGenAI } = await import('@google/genai')
+      const { GoogleGenAI } = sdkResult.value
       const ai = new GoogleGenAI({ apiKey: tokenData.token, httpOptions: { apiVersion: 'v1alpha' } })
 
       const session = await ai.live.connect({
@@ -358,7 +468,9 @@ export default function AiChat() {
         },
       })
       sessionRef.current = session
+      connectingRef.current = false
     } catch {
+      connectingRef.current = false
       setMessages((m) => [...m, { role: 'assistant', text: 'Could not access the microphone. Please allow mic access and try again.' }])
       endVoiceCallCleanup()
     }
@@ -369,8 +481,25 @@ export default function AiChat() {
     else startVoiceCall()
   }
 
+  // Warms the module cache for the voice SDK's chunk before the user even
+  // finishes clicking — the browser dedupes the identical import() call
+  // startVoiceCall makes right after, so this shaves its load time off the
+  // "Connecting…" critical path for free.
+  const prefetchVoiceSdk = () => {
+    if (voiceSupported) import('@google/genai')
+  }
+
   const openVoiceAssistant = () => {
+    // Guards against a fast double-tap firing this twice before React
+    // re-renders and hides the launcher button — without this, both taps
+    // would seed a greeting bubble and start a live session each.
+    if (connectingRef.current || sessionRef.current) return
     setOpen(true)
+    // Each open starts a fresh Live session, and Gemini re-greets as that
+    // session's first turn (see systemInstruction in lib/voiceAssistant.js) —
+    // so the local bubble is seeded on every open too, not just the first.
+    setMessages((m) => [...m, { role: 'assistant', text: voiceGreeting() }])
+    skipGreetingTranscriptRef.current = true
     startVoiceCall()
   }
 
@@ -445,6 +574,7 @@ export default function AiChat() {
       {!open && (
         <button
           onClick={openVoiceAssistant}
+          onPointerDown={prefetchVoiceSdk}
           aria-label="Open voice assistant"
           className="fixed z-40 bottom-24 right-4 lg:bottom-6 lg:right-6 w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center fab-accent transition-transform active:scale-95 hover:-translate-y-0.5"
         >
