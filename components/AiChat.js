@@ -188,6 +188,9 @@ export default function AiChat() {
       if (fc.name === 'log_expense') {
         const expenses = Array.isArray(fc.args?.expenses) ? fc.args.expenses : []
         let created = []
+        // Temporary — measures how long the tool-call round trip itself takes,
+        // separate from however long Gemini took to decide to call it.
+        const tFetchStart = performance.now()
         try {
           const res = await fetch('/api/ai/log-expenses', {
             method: 'POST',
@@ -197,6 +200,7 @@ export default function AiChat() {
           const data = await res.json()
           created = data.created || []
         } catch { /* reported back as created: 0 below */ }
+        console.log(`[voice log_expense] fetch round trip: ${Math.round(performance.now() - tFetchStart)}ms`)
         if (created.length) {
           setMessages((m) => [
             ...m,
