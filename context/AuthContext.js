@@ -2,122 +2,105 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth as useClerkAuth, useSignIn, useSignUp } from '@clerk/nextjs'
 
 const AuthContext = createContext(null)
 
-function errorMessage(error, fallback) {
-  return error?.longMessage || error?.message || fallback
-}
-
 export function AuthProvider({ children }) {
   const router = useRouter()
-  const { isLoaded: clerkLoaded, isSignedIn, signOut } = useClerkAuth()
-  const { signIn } = useSignIn()
-  const { signUp } = useSignUp()
-
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpPhone, setOtpPhone] = useState(null)
 
-  const fetchMe = useCallback(async () => {
+  useEffect(() => {
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      fetchMe(token).finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchMe = useCallback(async (token) => {
     try {
-      const res = await fetch('/api/auth/me')
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
       if (res.ok) {
         const data = await res.json()
         setUser(data.user)
       } else {
         setUser(null)
+        localStorage.removeItem('authToken')
       }
     } catch {
       setUser(null)
+      localStorage.removeItem('authToken')
     }
   }, [])
 
-  useEffect(() => {
-    if (!clerkLoaded) return
-    if (!isSignedIn) {
-      setUser(null)
-      setLoading(false)
-      return
+  async function sendOtp(phone) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, action: 'send-otp' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to send OTP')
+
+      setOtpPhone(phone)
+      setOtpSent(true)
+    } catch (err) {
+      throw new Error(err.message)
     }
-    fetchMe().finally(() => setLoading(false))
-  }, [clerkLoaded, isSignedIn, fetchMe])
-
-  async function login(email, password) {
-    if (!signIn) throw new Error('Auth is still loading, try again')
-
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Login failed')
-
-    const { error } = await signIn.ticket({ ticket: data.ticket })
-    if (error) throw new Error(errorMessage(error, 'Login failed'))
-
-    if (signIn.status !== 'complete') {
-      throw new Error('Could not complete login')
-    }
-
-    const { error: finalizeError } = await signIn.finalize()
-    if (finalizeError) throw new Error(errorMessage(finalizeError, 'Login failed'))
-    await fetchMe()
   }
 
-  async function signup(name, email, password) {
-    if (!signIn) throw new Error('Auth is still loading, try again')
+  async function verifyOtp(otp) {
+    if (!otpPhone) throw new Error('Phone not set')
 
-    const res = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Signup failed')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: otpPhone, otp, action: 'verify-otp' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to verify OTP')
 
-    const { error } = await signIn.ticket({ ticket: data.ticket })
-    if (error) throw new Error(errorMessage(error, 'Signup failed'))
-
-    if (signIn.status !== 'complete') {
-      throw new Error('Could not complete signup')
+      localStorage.setItem('authToken', data.token)
+      setUser(data.user)
+      setOtpSent(false)
+      setOtpPhone(null)
+      router.push('/dashboard')
+    } catch (err) {
+      throw new Error(err.message)
     }
-
-    const { error: finalizeError } = await signIn.finalize()
-    if (finalizeError) throw new Error(errorMessage(finalizeError, 'Signup failed'))
-    await fetchMe()
   }
 
-  async function loginWithGoogle() {
-    if (!signIn) throw new Error('Auth is still loading, try again')
+  async function signup(name, email, phone) {
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Signup failed')
 
-    const { error } = await signIn.sso({
-      strategy: 'oauth_google',
-      redirectUrl: '/dashboard',
-      redirectCallbackUrl: '/sso-callback',
-    })
-    if (error) throw new Error(errorMessage(error, 'Google sign-in failed'))
-  }
-
-  async function signupWithGoogle() {
-    if (!signUp) throw new Error('Auth is still loading, try again')
-
-    const { error } = await signUp.sso({
-      strategy: 'oauth_google',
-      redirectUrl: '/dashboard',
-      redirectCallbackUrl: '/sso-callback',
-    })
-    if (error) throw new Error(errorMessage(error, 'Google sign-up failed'))
+      localStorage.setItem('authToken', data.token)
+      setOtpPhone(phone)
+      setOtpSent(true)
+    } catch (err) {
+      throw new Error(err.message)
+    }
   }
 
   async function logout() {
-    try {
-      await signOut()
-    } catch (err) {
-      console.error('Sign out cleanup failed, session was still cleared:', err)
-    }
+    localStorage.removeItem('authToken')
     setUser(null)
+    setOtpSent(false)
+    setOtpPhone(null)
     router.push('/')
   }
 
@@ -126,12 +109,13 @@ export function AuthProvider({ children }) {
       value={{
         user,
         loading,
-        login,
+        otpSent,
+        otpPhone,
+        sendOtp,
+        verifyOtp,
         signup,
         logout,
         fetchMe,
-        loginWithGoogle,
-        signupWithGoogle,
       }}
     >
       {children}

@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { Eye, EyeOff, ArrowRight, Mail, Lock, User } from 'lucide-react'
-import GoogleIcon from '@/components/GoogleIcon'
+import { ArrowRight, Mail, Lock, User, Phone } from 'lucide-react'
 import Logo from '@/components/Logo'
 
 const FEATURES = [
@@ -15,36 +13,27 @@ const FEATURES = [
 ]
 
 export default function SignupPage() {
-  const { signup, signupWithGoogle } = useAuth()
-  const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
-  const [showPass, setShowPass] = useState(false)
+  const { signup, verifyOtp, otpSent, otpPhone } = useAuth()
+  const [form, setForm] = useState({ name: '', email: '', phone: '' })
+  const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const handleGoogle = async () => {
-    setGoogleLoading(true)
-    try {
-      await signupWithGoogle()
-    } catch (err) {
-      setError(err.message)
-      setGoogleLoading(false)
-    }
-  }
 
   const handleChange = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
     setError('')
   }
 
+  const handleOtpChange = (e) => {
+    setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+    setError('')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      await signup(form.name, form.email, form.password)
-      router.push('/dashboard')
+      await signup(form.name, form.email, form.phone)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -52,7 +41,17 @@ export default function SignupPage() {
     }
   }
 
-  const passwordStrength = form.password.length === 0 ? 0 : form.password.length < 6 ? 1 : form.password.length < 10 ? 2 : 3
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await verifyOtp(otp)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -97,113 +96,109 @@ export default function SignupPage() {
           </div>
 
           <h1 className="font-display text-2xl font-bold text-ink">Create your account</h1>
-          <p className="text-ink-muted text-sm mt-1 mb-7">Start tracking your expenses today.</p>
+          <p className="text-ink-muted text-sm mt-1 mb-7">Sign up with your phone number.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-ink-soft mb-1.5">Full Name</label>
-              <div className="input-field flex items-center gap-2.5">
-                <User className="w-4 h-4 text-ink-faint flex-shrink-0" />
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  required
-                  className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
-                />
+          {!otpSent ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">Full Name</label>
+                <div className="input-field flex items-center gap-2.5">
+                  <User className="w-4 h-4 text-ink-faint flex-shrink-0" />
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    required
+                    className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-ink-soft mb-1.5">Email Address</label>
-              <div className="input-field flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-ink-faint flex-shrink-0" />
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  required
-                  className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
-                />
+              <div>
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">Email Address</label>
+                <div className="input-field flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-ink-faint flex-shrink-0" />
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    required
+                    className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-ink-soft mb-1.5">Password</label>
-              <div className="input-field flex items-center gap-2.5">
-                <Lock className="w-4 h-4 text-ink-faint flex-shrink-0" />
-                <input
-                  name="password"
-                  type={showPass ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Min. 6 characters"
-                  required
-                  className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="text-ink-faint hover:text-ink-soft transition-colors flex-shrink-0"
-                >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+              <div>
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">Phone Number</label>
+                <div className="input-field flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-ink-faint flex-shrink-0" />
+                  <input
+                    name="phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    required
+                    className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint"
+                  />
+                </div>
               </div>
-              {/* Password strength */}
-              {form.password && (
-                <div className="mt-2 flex gap-1">
-                  {[1, 2, 3].map((level) => (
-                    <div
-                      key={level}
-                      className={`h-1 flex-1 rounded-full transition-all ${
-                        passwordStrength >= level
-                          ? level === 1 ? 'bg-danger' : level === 2 ? 'bg-[#F4A93B]' : 'bg-success'
-                          : 'bg-line'
-                      }`}
-                    />
-                  ))}
+
+              {error && (
+                <div className="text-danger text-sm bg-danger/10 border border-danger/25 rounded-xl px-4 py-3">
+                  {error}
                 </div>
               )}
-            </div>
 
-            {error && (
-              <div className="text-danger text-sm bg-danger/10 border border-danger/25 rounded-xl px-4 py-3">
-                {error}
+              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
+                {loading ? 'Sending OTP...' : 'Send OTP'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">
+                  Enter OTP sent to {otpPhone}
+                </label>
+                <div className="input-field flex items-center gap-2.5">
+                  <Lock className="w-4 h-4 text-ink-faint flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={handleOtpChange}
+                    placeholder="000000"
+                    maxLength="6"
+                    inputMode="numeric"
+                    required
+                    className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-ink-faint tracking-widest text-center"
+                  />
+                </div>
               </div>
-            )}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <ArrowRight className="w-4 h-4" />
+              {error && (
+                <div className="text-danger text-sm bg-danger/10 border border-danger/25 rounded-xl px-4 py-3">
+                  {error}
+                </div>
               )}
-              {loading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </form>
 
-          <div className="flex items-center gap-3 my-6 text-ink-faint text-xs font-medium">
-            <div className="flex-1 h-px bg-line" />
-            or continue with
-            <div className="flex-1 h-px bg-line" />
-          </div>
-
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-line hover:bg-cream text-sm font-semibold text-ink-soft transition-colors disabled:opacity-60"
-          >
-            {googleLoading ? (
-              <div className="w-4 h-4 border-2 border-ink-faint/30 border-t-ink-faint rounded-full animate-spin" />
-            ) : (
-              <GoogleIcon className="w-4 h-4" />
-            )}
-            {googleLoading ? 'Redirecting...' : 'Continue with Google'}
-          </button>
+              <button type="submit" disabled={loading || otp.length < 6} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
+                {loading ? 'Verifying...' : 'Verify & Sign Up'}
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-ink-muted text-sm mt-7">
             Already have an account?{' '}

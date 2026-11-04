@@ -1,5 +1,4 @@
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import Sidebar from '@/components/Sidebar'
@@ -11,7 +10,7 @@ const jakarta = Plus_Jakarta_Sans({ variable: '--font-jakarta', subsets: ['latin
 const SITE_URL = 'https://moneyjot.vercel.app'
 const CREATOR_NAME = 'Satyaswarupa Parida'
 const CREATOR_URL = 'https://www.linkedin.com/in/satyaswarupa/'
-const SITE_DESCRIPTION = 'MoneyJot is a real-time expense tracker built by Satyaswarupa Parida. Track daily spends, split shared bills, and follow money you’ve lent — all in one warm little place.'
+const SITE_DESCRIPTION = 'MoneyJot is a real-time expense tracker built by Satyaswarupa Parida. Track daily spends, split shared bills, and follow money youve lent — all in one warm little place.'
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -96,12 +95,10 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <ClerkProvider>
-          <AuthProvider>
-            <Sidebar />
-            <MainContent>{children}</MainContent>
-          </AuthProvider>
-        </ClerkProvider>
+        <AuthProvider>
+          <Sidebar />
+          <MainContent>{children}</MainContent>
+        </AuthProvider>
       </body>
     </html>
   )
